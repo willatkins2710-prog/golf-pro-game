@@ -85,10 +85,11 @@ root.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{t
 root.querySelectorAll("[data-action]").forEach(b=>b.addEventListener("click",()=>act(b.dataset.action)));
 }
 function showHome(page="home"){tab=page;byId("careerShell").classList.remove("hidden");byId("gameApp").classList.add("hidden");byId("stickyShot").classList.remove("visible");renderCareer();window.scrollTo(0,0)}
-function showRound(){if(!career.session)return showHome();byId("careerShell").classList.add("hidden");byId("gameApp").classList.remove("hidden");byId("stickyShot").classList.add("visible");const s=career.session;updateCourse(s.current);if(s.engineState&&s.scores[s.current]===null)engine.restore(s.engineState);else if(s.scores[s.current]===null&&engine.state().phase==="complete")engine.newHole();engine.resize();renderGameBar();window.scrollTo(0,0)}
+function showRound(){if(!career.session)return showHome();byId("careerShell").classList.add("hidden");byId("gameApp").classList.remove("hidden");byId("stickyShot").classList.add("visible");const s=career.session;const snapshot=s.engineState?JSON.parse(JSON.stringify(s.engineState)):null;updateCourse(s.current);if(snapshot&&s.scores[s.current]===null)engine.restore(snapshot);else if(s.scores[s.current]===null&&engine.state().phase==="complete")engine.newHole();engine.resize();renderGameBar();window.scrollTo(0,0)}
 function updateCourse(index){const h=course[index];window.golfConfig={...h};engine.configure(window.golfConfig);
 byId("roundHoleInfo").textContent="Hole "+h.number+" / 18 · "+h.name+" · Par "+h.par+" · "+h.yards+" yd";
 byId("actionTitle").textContent="Plan your next shot";
+const head=document.querySelector("#gameApp .header-line");if(head){head.querySelector("h2").textContent="Northern Masters · "+h.name;head.querySelector("p.hint").textContent="Hole "+h.number+" · Par "+h.par+" · "+h.yards+" yards · Firm fairways";head.querySelector(".badge").textContent=career.session?.mode==="practice"?"● PRACTICE ROUND":"● TOURNAMENT ROUND";}
 document.querySelector("#gameApp .course-head .overline").textContent="HOLE "+String(index+1).padStart(2,"0")+" / 18";
 document.querySelector("#gameApp .course-head h3").textContent=h.name+" · Par "+h.par+" · "+h.yards+" yd";
 document.querySelector("#gameApp .wind-icon").textContent=h.windX<0?"←":"→";
