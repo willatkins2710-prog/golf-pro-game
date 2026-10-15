@@ -1,0 +1,91 @@
+
+:root{--accent:#c4f178}
+#careerShell{max-width:1080px;margin:0 auto;padding:20px 16px 105px;color:#eff4e9}
+#careerShell.hidden{display:none}
+.site-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px}
+.site-title{font-weight:900;font-size:18px;letter-spacing:-.6px}.site-title span{display:block;color:#c4f178;font-size:10px;letter-spacing:1.7px;text-transform:uppercase}
+.nav-tabs{display:flex;gap:5px;overflow:auto;padding:5px 0 11px;scrollbar-width:none;margin-bottom:8px}
+.nav-tabs button{white-space:nowrap;border:1px solid #45614b;background:#1d3025;border-radius:99px;color:#d3e6d2;padding:9px 15px;font-size:12px;font-weight:750}
+.nav-tabs button.active{color:#17261c;background:#c4f178}
+.c-hero{border:1px solid #547b5799;background:linear-gradient(135deg,#254633,#16291e);border-radius:24px;padding:21px;margin-bottom:14px}
+.c-hero h1{font-size:31px;letter-spacing:-1.2px;margin:8px 0 6px}
+.c-hero .sub{color:#a9bfae;font-size:13px;margin-bottom:19px}
+.c-tag{color:#c4f178;font-weight:800;font-size:11px;letter-spacing:1.2px;text-transform:uppercase}
+.c-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.c-stat{background:#0c1d1566;border:1px solid #ffffff16;border-radius:12px;padding:12px 8px;text-align:center}
+.c-stat strong{font-size:20px;display:block;letter-spacing:-.5px}
+.c-stat small{color:#b5c7b5;font-size:11px;display:block;margin-top:3px}
+.c-panel{padding:17px;border:1px solid #3e5e45;background:#1b3024;border-radius:18px;margin:13px 0}
+.c-panel h2{font-size:18px;letter-spacing:-.4px;margin:0 0 10px}
+.c-panel p{color:#bbcebb;font-size:13px;margin:7px 0 11px}
+.c-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #ffffff14}
+.c-row:last-child{border-bottom:0}
+.c-row small{color:#a5baa6}.c-row strong{font-size:14px}
+.c-button{width:100%;border:0;border-radius:13px;background:#c4f178;color:#193122;padding:14px 13px;font-weight:900;font-size:14px;margin-top:10px}
+.c-button.secondary{background:#294b36;border:1px solid #547955;color:#e8f6e7}
+.c-button.danger{background:#442b2b;color:#ffe5e5;border:1px solid #865454}
+.c-button:disabled{opacity:.45}
+.c-inline{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.c-pill{display:inline-flex;padding:5px 9px;border-radius:99px;border:1px solid #80ac66aa;color:#d2efa6;font-size:10px;font-weight:800}
+.c-muted{color:#a8bba9;font-size:12px}
+.c-bar{height:8px;border-radius:99px;background:#354839;overflow:hidden;margin-top:7px}
+.c-bar i{display:block;height:100%;background:#bcf084;border-radius:99px}
+.c-scoregrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;margin:14px 0}
+.c-hscore{border-radius:10px;background:#122a1d;border:1px solid #48654e;padding:9px 2px;text-align:center}
+.c-hscore.current{border-color:#cef287;background:#345237}
+.c-hscore b{font-size:15px;display:block}.c-hscore small{font-size:10px;color:#a4bba6}
+.c-hscore .sim{color:#dfca8e}.c-hscore .play{color:#d1f09a}
+.c-hscore .empty{color:#637a68}
+.c-attr{margin-bottom:14px}
+.c-attr .head{display:flex;justify-content:space-between;font-size:12px;font-weight:650}
+.c-attr .head span:last-child{color:#d9f2ad}
+.c-overlay{position:fixed;inset:0;background:#05130ddc;z-index:120;display:grid;align-items:end;justify-items:center;padding:12px}
+.c-dialog{background:#1c3427;border:1px solid #68845e;border-radius:20px;padding:18px;width:min(500px,100%);max-height:85dvh;overflow:auto;box-shadow:0 15px 60px #0009}
+.c-dialog h2{margin:0 0 8px;font-size:22px}
+.c-dialog p{font-size:12px;color:#b8cdb8}
+.c-dialog .c-button{margin-top:8px}
+#roundTopBar{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:9px 11px;margin-bottom:10px;background:#23412e;border:1px solid #4a694e;border-radius:15px}
+#roundTopBar strong{font-size:14px}#roundTopBar small{display:block;color:#b1ccb4;font-size:10px}
+#roundTopBar button{border:1px solid #5a8060;background:#183223;border-radius:10px;color:#e1f2db;padding:10px;font-weight:800;font-size:12px}
+#roundTopBar #roundScore{color:#c4f178;font-size:19px;font-weight:900}
+#stickyShot{position:fixed;z-index:90;bottom:0;left:0;right:0;padding:10px 13px calc(10px + env(safe-area-inset-bottom));background:#0a1c13ef;border-top:1px solid #73966b;display:none;box-shadow:0 -12px 38px #0009;backdrop-filter:blur(12px)}
+#stickyShot.visible{display:block}
+#stickyShot .inner{display:flex;align-items:center;gap:8px;max-width:950px;margin:auto}
+#stickyShot #fixedHit{flex:1;background:#c4f178;color:#14271a;border:0;border-radius:13px;min-height:55px;font-weight:900;font-size:15px}
+#stickyShot #fixedSkip{background:#284534;border:1px solid #658569;border-radius:13px;min-height:55px;color:#eff5ec;padding:0 15px;font-weight:800}
+#gameApp{padding-bottom:125px}
+#gameApp #hit{display:none!important}
+#gameApp #endControls{display:none!important}
+#gameApp #resetTop{display:none}
+#gameApp #flightChoices .chip{min-height:42px}
+#gameApp .course-head{padding:12px 13px 9px}
+#gameApp .course-head h3{margin:0;font-size:15px}
+#gameApp .course-footer{flex-wrap:wrap;padding:8px 14px 10px}
+#gameApp .control-panel h3{font-size:20px}
+#gameApp .control-panel .group{margin:12px 0}
+#gameApp .control-panel .notice{font-size:11px;padding:8px 10px}
+#gameApp .control-panel .helper{display:none}
+#gameApp .footer{display:none}
+#gameApp .career{display:none}
+#gameApp .map-wrap canvas{height:365px}
+@media(max-width:800px){
+ #careerShell{padding:13px 12px 100px}
+ .c-hero{padding:17px}.c-hero h1{font-size:27px}
+ .c-stat strong{font-size:18px}
+ #gameApp{padding:12px 10px 125px}
+ #gameApp .mast{display:none}
+ #gameApp .header-line{display:none}
+ #gameApp .layout{gap:9px}
+ #gameApp .map-wrap canvas{height:300px}
+ #gameApp .metrics .metric{padding:8px 3px}
+ #gameApp .metrics .metric .v{font-size:17px}
+ #gameApp .course-head .wind-icon{height:32px;width:32px;font-size:21px}
+ #gameApp .course-head .wind strong{font-size:11px}
+ #gameApp .control-panel{padding:13px}
+ #gameApp .control-panel .group{margin:10px 0}
+ #gameApp .club{padding:8px;min-width:76px}
+ #gameApp .chip{padding:7px 4px;min-height:36px}
+ #gameApp .prediction{padding:7px}
+ #gameApp .prediction .prednum{font-size:15px}
+}
+@media(max-width:375px){.c-scoregrid{grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}#gameApp .map-wrap canvas{height:270px}#stickyShot #fixedHit{font-size:13px}}
