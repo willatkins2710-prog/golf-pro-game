@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#11251e" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Golf Pro — Shot Lab</title>
+<style>
+:root{--ink:#eff4e9;--muted:#a4b7a7;--line:#33473c;--bg:#101d18;--panel:#1b2e24;--panel2:#233b2d;--lime:#c4f178;--gold:#efd198;--green:#79b88d;--water:#73b7d0;}
+*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:radial-gradient(circle at 82% -12%,#33583d 0,transparent 47%),var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;line-height:1.42;min-height:100vh}button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:default}
+.app{max-width:1130px;margin:0 auto;padding:22px 18px 90px}.mast{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:19px}.brand{display:flex;align-items:center;gap:11px}.brandmark{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:var(--lime);color:#13251b;font-size:24px;font-weight:900;box-shadow:0 8px 30px #0003}.overline{font-size:10px;letter-spacing:2.1px;font-weight:800;color:var(--lime);text-transform:uppercase}.brand h1{font-size:21px;line-height:1.04;letter-spacing:-.8px;margin:4px 0 0}.ghost-btn{border:1px solid var(--line);background:#ffffff0a;border-radius:12px;color:var(--ink);padding:10px 12px;font-weight:700}.badge{display:inline-flex;gap:6px;align-items:center;border:1px solid #a6d78255;color:#c9efa5;background:#82bf6320;border-radius:99px;padding:5px 9px;text-transform:uppercase;letter-spacing:1px;font-size:10px;font-weight:850}.header-line{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.header-line h2{font-size:32px;letter-spacing:-1.2px;margin:3px 0}.hint{color:var(--muted);font-size:12px;margin:0}.top-pill{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end}.top-pill span{font-size:11px;border:1px solid var(--line);background:#FFFFFF08;padding:7px 10px;border-radius:99px;color:var(--muted)}.layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:18px;align-items:start}.layout>*{min-width:0}.panel{min-width:0}.panel{background:linear-gradient(156deg,#213729,#17281f);border:1px solid #43604778;border-radius:22px;box-shadow:0 14px 50px #0003;overflow:hidden}.course-head{padding:17px 18px 13px;display:flex;align-items:center;justify-content:space-between;gap:12px}.course-head h3{font-size:18px;letter-spacing:-.4px;margin:2px 0}.course-head .hint{font-size:11px}.wind{text-align:right;display:flex;align-items:center;gap:10px}.wind-icon{border:1px solid #b3e1db40;border-radius:50%;background:#b7e4dd12;color:#a2e2dc;height:42px;width:42px;font-size:30px;display:grid;place-items:center;line-height:1}.wind strong{display:block;font-size:13px}.wind small{display:block;color:#a9ccc4;font-size:10px;letter-spacing:.5px}.map-wrap{position:relative;background:#163a29;overflow:hidden;margin:0 12px;border-radius:15px;border:1px solid #ffffff16;isolation:isolate}.map-wrap canvas{display:block;width:100%;height:455px;touch-action:pan-y}.map-label{position:absolute;top:12px;left:12px;border:1px solid #fff3;background:#0a1d16cb;padding:7px 10px;border-radius:10px;color:#ebf5e4;font-size:10px;font-weight:800;letter-spacing:1px;pointer-events:none}.zoom-label{position:absolute;top:12px;right:12px;background:#0a1d16cb;border-radius:10px;padding:7px 10px;pointer-events:none;font-size:10px;letter-spacing:.5px;color:#ebf5e4}.shot-toast{display:none;position:absolute;bottom:18px;left:50%;transform:translateX(-50%);padding:9px 16px;border-radius:99px;background:#e8f4db;color:#203828;box-shadow:0 8px 24px #0005;font-size:12px;font-weight:900;white-space:nowrap}.shot-toast.active{display:block}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;border-top:1px solid #49634f64;background:#405847;margin-top:12px}.metric{background:#1c3025;text-align:center;padding:13px 4px 15px}.metric .k{font-size:10px;color:#a9bca9;margin-top:4px;letter-spacing:.3px}.metric .v{font-size:20px;font-weight:800;letter-spacing:-.4px;white-space:nowrap}.metric .v.lie{font-size:12px;white-space:normal;line-height:24px}.metric.highlight .v{color:var(--lime)}.course-footer{padding:12px 18px 15px;color:#b1c3b2;font-size:11px;display:flex;align-items:center;justify-content:space-between;gap:6px}.control-panel{padding:19px}.step{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:6px}.step small{color:var(--lime);letter-spacing:1.6px;font-size:10px;font-weight:800;text-transform:uppercase}.control-panel h3{font-size:23px;letter-spacing:-.8px;margin:3px 0 5px}.notice{background:#c8e79b12;border:1px solid #c0e4a02c;color:#dceace;border-radius:13px;padding:11px 12px;font-size:12px;margin:14px 0}.group{margin:17px 0}.grouphead{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:0 0 9px}.grouphead strong{font-size:13px}.grouphead em{font-style:normal;color:var(--muted);font-size:11px}.club-choices{display:flex;gap:8px;overflow-x:auto;padding:1px 0 8px;scrollbar-width:thin;scrollbar-color:#789378 transparent}.club{flex:0 0 auto;min-width:85px;padding:11px 10px;background:#13231b;border:1px solid #48634c;border-radius:13px;color:#e5f1dc;text-align:left}.club strong{display:block;font-size:14px}.club span{display:block;font-size:11px;color:#aabbaa;margin-top:4px}.club.active,.chip.active{background:#d0ee96;color:#193223;border-color:#d0ee96;box-shadow:0 1px 12px #d1ec8833}.club.active span{color:#415e37}.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.chip{min-height:40px;background:#11221a;border:1px solid #435c49;color:#dbe8d8;border-radius:11px;font-weight:700;padding:8px 6px;font-size:12px}.chip:focus-visible,.club:focus-visible,.primary:focus-visible{outline:3px solid #fff;outline-offset:2px}.two{grid-template-columns:repeat(3,1fr)}.slider-row{display:flex;align-items:center;gap:12px}.slider-row input{flex:1;accent-color:#d0ee96;min-width:0}.power{padding:4px 7px;border-radius:8px;background:#314738;font-weight:800;min-width:53px;text-align:center}.prediction{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;background:#0d1e16;border-radius:12px;padding:10px;margin-top:12px}.prediction>div{text-align:center;padding:3px 0}.prediction .prednum{font-size:18px;letter-spacing:-.4px;font-weight:800;color:#e9f5df}.prediction small{display:block;color:#9aaea1;font-size:10px;margin-top:3px}.primary{border:0;background:var(--lime);color:#1b301f;border-radius:14px;display:block;width:100%;padding:17px 10px;font-size:15px;font-weight:900;box-shadow:0 6px 0 #83b753,0 14px 28px #0005;transition:transform .12s,box-shadow .12s}.primary:active:not(:disabled){transform:translateY(4px);box-shadow:0 2px 0 #83b753,0 8px 16px #0004}.helper{font-size:11px;color:#9fb2a2;text-align:center;margin:13px 0 0}.log-panel{margin-top:18px;padding:17px}.log-panel h3{font-size:14px;margin:0 0 9px}.log-entry{border-top:1px solid #49634e60;padding:11px 0 3px}.log-entry:first-of-type{border-top:0}.log-entry strong{font-size:12px}.log-entry p{font-size:11px;color:#b0c3b2;margin:4px 0}.career{margin-top:17px;background:#18291f;border:1px solid #4158467c;border-radius:16px;padding:15px;display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}.career strong{font-size:13px}.career small{color:#9db19e;font-size:11px;display:block;margin-top:4px}.footer{color:#7e9585;text-align:center;font-size:11px;margin-top:20px}.hidden{display:none!important}.ending{border:1px solid #c3e8965e;background:#b1e67512;border-radius:13px;padding:12px;margin-top:12px}.ending h4{color:#daf6b5;font-size:20px;margin:2px 0}.outline{padding:12px 13px;background:#ffffff06;border:1px solid #657c696a;color:#e9f1e6;border-radius:12px;font-weight:800;width:100%;margin-top:9px}.pointer{color:var(--gold)}
+@media(max-width:800px){.app{padding:14px 12px 80px}.header-line h2{font-size:25px}.layout{grid-template-columns:minmax(0,1fr);gap:12px}.map-wrap canvas{height:400px}.control-panel{padding:17px}.metric .v{font-size:18px}.mast{margin-bottom:16px}.brand h1{font-size:19px}.top-pill{justify-content:flex-start}.header-line{align-items:flex-start}.top-pill span{font-size:10px;padding:6px 8px}}
+@media(max-width:370px){.map-wrap canvas{height:355px}.metric .v{font-size:16px}.metric .v.lie{font-size:11px}.app{padding:12px 9px 60px}.control-panel{padding:13px}.header-line{flex-direction:column}.top-pill{width:100%}}
+@media(prefers-reduced-motion:reduce){.primary{transition:none}}
+</style>
+</head>
+<body>
+<main class="app">
+<header class="mast"><div class="brand"><div class="brandmark">G</div><div><span class="overline">Golf Pro · Career Simulator</span><h1>THE SHOT LAB</h1></div></div><button id="resetTop" class="ghost-btn" type="button">↻ Replay hole</button></header>
+<div class="header-line"><div><span class="badge">● PRACTICE ROUND</span><h2>Northern Masters</h2><p class="hint">Hole 1 · Par 4 · 420 yards · Firm fairways</p></div><div class="top-pill"><span>Season 1 · Week 5</span><span>Level 3 · Rookie</span></div></div>
+<div class="layout">
+<section class="panel" aria-label="Course view"><div class="course-head"><div><span class="overline">HOLE 01 / PRACTICE</span><h3>Overhead course view</h3><p class="hint">Animated flight, landing &amp; roll</p></div><div class="wind"><div class="wind-icon" aria-hidden="true">←</div><div><strong>10 mph</strong><small>RIGHT → LEFT</small></div></div></div>
+<div class="map-wrap"><canvas id="course" aria-label="Top-down golf hole with animated ball shots"></canvas><div class="map-label" id="viewLabel">FULL HOLE</div><div class="zoom-label" id="zoomLabel">WIND ←</div><div class="shot-toast" id="flightToast" aria-live="polite">BALL IN FLIGHT</div></div>
+<div class="metrics"><div class="metric"><div class="v" id="strokeNum">0</div><div class="k">STROKES</div></div><div class="metric highlight"><div class="v" id="pinNum">420 yd</div><div class="k" id="pinLabel">TO PIN</div></div><div class="metric"><div class="v" id="frontNum">403 yd</div><div class="k">TO FRONT</div></div><div class="metric"><div class="v lie" id="lieNum">Tee</div><div class="k">LIE</div></div></div><div class="course-footer"><span id="backText">Green: front 403 yd · centre 420 yd · back 436 yd</span><span id="shotStatus" class="pointer">Choose a shot →</span></div></section>
+<div><section class="panel control-panel" aria-label="Shot controls"><div class="step"><small id="stepLabel">Shot 1 · On the tee</small><span class="badge" id="scoreBadge">EVEN PAR</span></div><h3 id="actionTitle">Plan your tee shot</h3><p class="hint" id="actionSubtitle">Pick the club, flight, shape and landing target. Every choice affects the shot.</p>
+<div id="playControls"><div class="group"><div class="grouphead"><strong>1. Select club</strong><em>Stock carry at 100%</em></div><div id="clubTrack" class="club-choices" role="group" aria-label="Golf club selection"></div></div>
+<div class="group"><div class="grouphead"><strong>2. Shot flight</strong><em>Wind &amp; roll change by flight</em></div><div id="flightChoices" class="choices" role="group" aria-label="Shot flight"></div></div>
+<div class="group" id="shapeGroup"><div class="grouphead"><strong>3. Shot shape</strong><em>Influences landing direction</em></div><div id="shapeChoices" class="choices" role="group" aria-label="Shot shape"></div></div>
+<div class="group"><div class="grouphead"><strong id="aimHeading">4. Aim point</strong><em>Marker shown on course</em></div><div id="aimChoices" class="choices" role="group" aria-label="Aim point"></div></div>
+<div class="group"><div class="grouphead"><strong id="powerName">5. Swing power</strong><em id="powerHelp">Affects carry and dispersion</em></div><div class="slider-row"><input id="power" type="range" min="65" max="110" value="100" step="5" aria-label="Swing power"/><span id="powerOut" class="power">100%</span></div></div>
+<div class="prediction"><div><div id="previewCarry" class="prednum">212 yd</div><small>EST. CARRY</small></div><div><div id="previewEnd" class="prednum">204 yd</div><small>AFTER SHOT*</small></div><div><div id="previewWind" class="prednum">← 10 yd</div><small>WIND DRIFT</small></div></div>
+<div class="notice" id="tip">The wind will push your ball left. A 3 Wood aimed left avoids water but risks the left rough.</div>
+<button id="hit" class="primary" type="button">HIT 3 WOOD →</button><p class="helper">One shot at a time. Watch your ball move, then make the next decision.</p></div>
+<div id="endControls" class="hidden"><div class="ending"><span class="overline">Hole finished</span><h4 id="finishName">Par!</h4><p id="finishLine" class="hint"></p></div><button id="restartBtn" class="primary" type="button">PLAY THE HOLE AGAIN ↻</button><p class="helper">Practice only. Your career money, XP and sponsorship remain unchanged.</p></div>
+</section><section class="panel log-panel" aria-label="Shot history"><h3>SHOT HISTORY <span id="logCount" style="color:#9daf9f;font-size:11px;font-weight:500">· 0 played</span></h3><div id="log"><p class="hint">Your shot-by-shot results will appear here.</p></div></section></div>
+</div>
+<div class="career"><div><strong>YOUR CAREER IS SAFE</strong><small>Practice doesn't change tournament entry, money or XP.</small></div><div><strong>£3,000 bank · £4,790 earnings</strong><small>Level 3 · 720/1,000 XP · Mizuno offer still pending</small></div><div><strong>Ratings: D60 · I64 · S51 · P54</strong><small>Mental 45 · Fitness 65 · 0 skill points</small></div></div>
+<div class="footer">Fictional practice course and simulation. Results are generated locally in your browser. No account, API or paid service needed.</div>
+</main>
+<script>
+(()=>{
+'use strict';
+const KEY='golfpro_practice_shotlab_2026_v1';
+const el=id=>document.getElementById(id);
+const clubs=[
+ {id:'driver',label:'Driver',carry:242,kind:'wood'}, {id:'3wood',label:'3 Wood',carry:212,kind:'wood'},
+ {id:'hybrid',label:'Hybrid',carry:194,kind:'wood'}, {id:'4iron',label:'4 Iron',carry:180,kind:'iron'},
+ {id:'5iron',label:'5 Iron',carry:169,kind:'iron'}, {id:'6iron',label:'6 Iron',carry:156,kind:'iron'},
+ {id:'7iron',label:'7 Iron',carry:144,kind:'iron'}, {id:'8iron',label:'8 Iron',carry:131,kind:'iron'},
+ {id:'9iron',label:'9 Iron',carry:118,kind:'iron'}, {id:'pw',label:'Pitch Wedge',carry:102,kind:'wedge'},
+ {id:'gw',label:'Gap Wedge',carry:83,kind:'wedge'}, {id:'sw',label:'Sand Wedge',carry:64,kind:'wedge'},
+ {id:'lw',label:'Lob Wedge',carry:47,kind:'wedge'}, {id:'putter',label:'Putter',carry:0,kind:'putter'}
+];
+const flightModes=[{id:'normal',label:'Normal',mult:1,roll:1,wind:1},{id:'high',label:'High',mult:.96,roll:.36,wind:1.55},{id:'punch',label:'Punch',mult:.82,roll:1.75,wind:.5},{id:'chip',label:'Chip',mult:.53,roll:1.6,wind:.23},{id:'flop',label:'Flop',mult:.62,roll:.1,wind:1.25},{id:'splash',label:'Sand shot',mult:.64,roll:.15,wind:.45}];
+const labels={straight:'Straight',draw:'Draw ↶',fade:'Fade ↷',left:'Left',centre:'Centre',right:'Right',lag:'Lag',standard:'Normal',firm:'Firm'};
+const createGame=()=>({ball:{x:0,y:0},lie:'Tee',strokes:0,penalties:0,phase:'tee',history:[],club:'3wood',flight:'normal',shape:'straight',aim:'left',power:100,finish:false});
+let g=createGame(), anim=null;
+try{const saved=JSON.parse(localStorage.getItem(KEY)||'null');if(saved&&saved.ball&&saved.phase&&Array.isArray(saved.history))g={...createGame(),...saved};}catch(e){}
+const canvas=el('course'),ctx=canvas.getContext('2d');let dims={w:360,h:455,dpr:1},lastTrail=null;
+const cap=(n,a,b)=>Math.max(a,Math.min(b,n));const rnd=(a,b)=>a+Math.random()*(b-a);const normal=()=>{let u=1-Math.random(),v=1-Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+const club=()=>clubs.find(c=>c.id===g.club)||clubs[1];const flight=()=>flightModes.find(f=>f.id===g.flight)||flightModes[0];
+const centery=y=>4*Math.sin(y/77)-2.5;
+function toPin(pos=g.ball){return Math.hypot(420-pos.y,pos.x)}
+function dist(y){return Math.max(0,Math.round(Math.hypot(y-g.ball.y,g.ball.x)))}
+function onGreen(pos){return ((pos.x/25)**2+((pos.y-420)/17)**2)<1}
+function isSand(x,y){return ((x+42)/12)**2+((y-298)/23)**2<1||((x+31)/11)**2+((y-410)/14)**2<1||((x-31)/12)**2+((y-431)/12)**2<1}
+function isWater(x,y){return x>49&&y>194&&y<377}
+function lieAt(x,y){if(isWater(x,y))return'Water hazard';if(onGreen({x,y}))return'Green';if(isSand(x,y))return'Bunker';if(y>=397&&y<=453)return'Greenside rough';if(y>445)return'Long rough';return Math.abs(x-centery(y)) < 31-(y>280&&y<335?4:0)?'Fairway':'Rough'}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(g))}catch(e){}}
+function projection(preview=false){let selected=club(),f=flight();if(g.phase==='green')return{carry:0,roll:0,wind:0,dest:{x:0,y:420},after:0};
+let lieMod=g.lie==='Rough'?.89:g.lie==='Bunker'?.72:g.lie==='Greenside rough'?.86:g.lie==='Long rough'?.77:1;
+let carry=selected.carry*(g.power/100)*f.mult*lieMod;
+let wind=-10*(carry/195)*.89*f.wind;
+let roll=(selected.kind==='wood'?14:selected.kind==='iron'?6:2)*f.roll*(g.lie==='Fairway'||g.lie==='Tee'?1:.28);
+if(g.flight==='chip')roll=Math.max(5,carry*.65);
+if(g.flight==='flop')roll=1.5;
+if(g.flight==='splash')roll=1.2;
+let direction=g.ball.y>422?-1:1;let launchY=g.ball.y+direction*carry, endY=launchY+direction*roll;
+let aimOffset={left:-14,centre:0,right:47}[g.aim]||0;
+let shape={straight:0,draw:-8,fade:8}[g.shape]||0;
+let targetX=centery(endY)+aimOffset+shape+wind;
+if(preview)return{carry,roll,wind,dest:{x:targetX,y:endY},after:Math.round(Math.hypot(420-endY,targetX))};
+let deviation=selected.kind==='wood'?10:selected.kind==='iron'?7.5:4.3;
+if(g.flight==='punch')deviation*=.78;
+if(g.flight==='flop')deviation*=1.3;
+if(g.lie==='Rough'||g.lie==='Bunker'||g.lie==='Long rough')deviation*=1.45;
+let actualCarry=Math.max(2,carry+normal()*(selected.kind==='wood'?11:selected.kind==='iron'?7:4)*(.75+g.power/240));
+let actualRoll=Math.max(0,roll+rnd(-2,4));
+let newX=targetX+normal()*deviation;
+let actualY=cap(g.ball.y+direction*(actualCarry+actualRoll),-3,463);
+return{carry:actualCarry,roll:actualRoll,wind,dest:{x:newX,y:actualY},after:Math.round(Math.hypot(420-actualY,newX))};
+}
+function setupCanvas(){const rect=canvas.getBoundingClientRect();dims={w:rect.width,h:rect.height,dpr:Math.min(2,window.devicePixelRatio||1)};canvas.width=Math.round(dims.w*dims.dpr);canvas.height=Math.round(dims.h*dims.dpr);ctx.setTransform(dims.dpr,0,0,dims.dpr,0,0);draw();}
+function view(){return g.phase==='green'&&!anim?{xmin:-48,xmax:48,ymin:378,ymax:462}:{xmin:-107,xmax:107,ymin:-17,ymax:464}}
+function px(x,v){return (x-v.xmin)/(v.xmax-v.xmin)*dims.w}
+function py(y,v){return dims.h-(y-v.ymin)/(v.ymax-v.ymin)*dims.h}
+function worldCircle(x,y,r,color,v,stroke){ctx.beginPath();ctx.arc(px(x,v),py(y,v),r/(v.xmax-v.xmin)*dims.w,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();if(stroke){ctx.lineWidth=1.5;ctx.strokeStyle=stroke;ctx.stroke();}}
+function ellipse(x,y,rx,ry,fill,v,rotate=0){ctx.beginPath();ctx.ellipse(px(x,v),py(y,v),rx/(v.xmax-v.xmin)*dims.w,ry/(v.ymax-v.ymin)*dims.h,rotate,0,Math.PI*2);ctx.fillStyle=fill;ctx.fill();}
+function lineWorld(points,color,w,v,dash){ctx.beginPath();ctx.moveTo(px(points[0].x,v),py(points[0].y,v));for(let i=1;i<points.length;i++)ctx.lineTo(px(points[i].x,v),py(points[i].y,v));ctx.strokeStyle=color;ctx.lineWidth=w;ctx.lineJoin='round';ctx.lineCap='round';if(dash)ctx.setLineDash(dash);ctx.stroke();ctx.setLineDash([])}
+function renderCourse(v){const W=dims.w,H=dims.h;const grd=ctx.createLinearGradient(0,0,0,H);grd.addColorStop(0,'#214936');grd.addColorStop(1,'#173725');ctx.fillStyle=grd;ctx.fillRect(0,0,W,H);
+// Rough mowing lines
+ctx.globalAlpha=.13;for(let i=-18;i<24;i++){ctx.fillStyle=i%2?'#64a973':'#102c23';ctx.beginPath();ctx.moveTo(i*36,0);ctx.lineTo(i*36+23,0);ctx.lineTo(i*36-35,H);ctx.lineTo(i*36-60,H);ctx.fill()}ctx.globalAlpha=1;
+// fairway outline as varying polygons
+const edgePts=(offset)=>{let pts=[];for(let y=12;y<=392;y+=8)pts.push({x:centery(y)+offset,y});return pts};
+function fillStrip(width,color){let L=edgePts(-width),R=edgePts(width).reverse();ctx.beginPath();ctx.moveTo(px(L[0].x,v),py(L[0].y,v));[...L.slice(1),...R].forEach(p=>ctx.lineTo(px(p.x,v),py(p.y,v)));ctx.closePath();ctx.fillStyle=color;ctx.fill()}
+fillStrip(41,'#427b4d');fillStrip(32,'#79ae69');
+ctx.save();ctx.beginPath();const L=edgePts(-32),R=edgePts(32).reverse();ctx.moveTo(px(L[0].x,v),py(L[0].y,v));[...L.slice(1),...R].forEach(p=>ctx.lineTo(px(p.x,v),py(p.y,v)));ctx.closePath();ctx.clip();ctx.globalAlpha=.065;for(let i=0;i<18;i++){ctx.fillStyle=i%2?'#fff':'#06291e';ctx.fillRect(0,i*H/18,W,H/18)}ctx.restore();
+// water right
+ctx.beginPath();const water=[{x:55,y:195},{x:85,y:196},{x:103,y:221},{x:111,y:290},{x:104,y:376},{x:72,y:378},{x:61,y:351},{x:68,y:308},{x:51,y:261}];ctx.moveTo(px(water[0].x,v),py(water[0].y,v));water.slice(1).forEach(p=>ctx.lineTo(px(p.x,v),py(p.y,v)));ctx.closePath();const waterGrad=ctx.createLinearGradient(px(40,v),0,px(100,v),0);waterGrad.addColorStop(0,'#72bbcb');waterGrad.addColorStop(1,'#276b91');ctx.fillStyle=waterGrad;ctx.fill();ctx.strokeStyle='#b1dbd0';ctx.lineWidth=1.5;ctx.stroke();
+// sand bunkers
+ellipse(-42,298,12,23,'#ebd4a0',v,-.35);ellipse(-31,410,11,14,'#ebd4a0',v,.4);ellipse(31,431,12,12,'#ebd4a0',v,.4);
+// Green collar & green
+ellipse(0,420,30,22,'#54975a',v);ellipse(0,420,25,17,'#a1cc87',v);
+for(let i=-2;i<=2;i++){ctx.globalAlpha=.09;ellipse(i*8,420,4,15,i%2?'#285d37':'#fff',v)}ctx.globalAlpha=1;
+// tee ground
+ellipse(0,0,16,7,'#75ac6f',v);
+// trees visual (deterministic)
+for(let i=0;i<30;i++){const y=i*17+12;const x=(i%2===0?-1:1)*(69+(i*13)%29);if(isWater(x,y)||y>395)continue;ellipse(x,y,6+(i%4),5+(i%3),'#244d32',v);ellipse(x-1.5,y+1.5,4+(i%3),4+(i%2),'#32603b',v)}
+// flag pole
+const hx=px(0,v),hy=py(420,v);ctx.strokeStyle='#f5f4df';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(hx,hy-21);ctx.stroke();ctx.beginPath();ctx.moveTo(hx,hy-21);ctx.lineTo(hx+13,hy-17);ctx.lineTo(hx,hy-12);ctx.closePath();ctx.fillStyle='#e9c977';ctx.fill();worldCircle(0,420,1.8,'#fef7e2',v);
+}
+function draw(){if(!ctx)return;ctx.clearRect(0,0,dims.w,dims.h);const v=view();renderCourse(v);
+if(g.phase!=='complete'&&g.phase!=='green'&&!anim){const estimate=projection(true), end={x:cap(estimate.dest.x,-105,105),y:cap(estimate.dest.y,-10,455)};ctx.globalAlpha=.9;lineWorld([g.ball,end],'#f2f2bd',1.8,v,[5,6]);worldCircle(end.x,end.y,3,'#e9edb878',v,'#f6ecc0');ctx.globalAlpha=1;}
+if(lastTrail){const points=lastTrail;lineWorld(points.map(p=>({x:p.x,y:p.y})),'#dff0c1b0',2.6,v)}
+const ball=anim?anim.current:g.ball;
+// shadow & glow
+const bx=px(ball.x,v),by=py(ball.y,v);const airtime=anim&&!anim.putt?Math.sin(anim.progress*Math.PI):0;
+ctx.beginPath();ctx.ellipse(bx,by+1,6+airtime*4,3.5,0,0,Math.PI*2);ctx.fillStyle='#041b136b';ctx.fill();
+ctx.shadowColor='#f9fcdd';ctx.shadowBlur=anim?16:9;ctx.beginPath();ctx.arc(bx,by-airtime*11,anim?6.5:5.5,0,Math.PI*2);ctx.fillStyle='#fefef2';ctx.fill();ctx.shadowBlur=0;
+ctx.beginPath();ctx.arc(bx-1,by-airtime*11-1.5,2,0,Math.PI*2);ctx.fillStyle='#c8e9c8';ctx.fill();
+}
+function flightOptions(){if(g.phase==='green')return[];if(g.lie==='Bunker')return ['splash','normal'];if(toPin()<85)return['normal','high','chip','flop'];return['normal','high','punch']}
+function validClubs(){if(g.phase==='green')return clubs.filter(c=>c.kind==='putter');return clubs.filter(c=>c.kind!=='putter'&&(toPin()>110||c.kind!=='wood'||c.id==='hybrid'))}
+function recommendedClub(){let d=toPin();let options=validClubs();return options.reduce((a,b)=>Math.abs(b.carry-d)<Math.abs(a.carry-d)?b:a,options[0]).id}
+function buttonGroup(target,items,current,update){el(target).innerHTML='';for(const item of items){const b=document.createElement('button');b.type='button';b.className='chip'+(item.id===current?' active':'');b.textContent=item.label;b.setAttribute('aria-pressed',item.id===current?'true':'false');b.addEventListener('click',()=>{update(item.id);save();render()});el(target).appendChild(b)}}
+function makeClubs(){const track=el('clubTrack');track.innerHTML='';for(const c of validClubs()){const b=document.createElement('button');b.type='button';b.className='club'+(g.club===c.id?' active':'');b.innerHTML=`<strong>${c.label}</strong><span>${g.phase==='green'?'On the green':c.carry+' yd carry'}</span>`;b.setAttribute('aria-pressed',g.club===c.id?'true':'false');b.addEventListener('click',()=>{g.club=c.id;save();render();});track.appendChild(b);}let selected=track.querySelector('.active');if(selected){const preferred=selected.offsetLeft-track.offsetLeft-track.clientWidth/2+selected.clientWidth/2;track.scrollLeft=Math.max(0,preferred)}}
+function formatScore(strokes=g.strokes){const score=strokes-4;return score===0?'EVEN PAR':`${score>0?'+':''}${score}`}
+function render(){const done=g.phase==='complete',on=g.phase==='green';
+el('strokeNum').textContent=g.strokes;
+el('pinNum').textContent=done?'HOLED':on?Math.round(toPin()*3)+' ft':Math.round(toPin())+' yd';
+el('pinLabel').textContent=on?'TO CUP':'TO PIN';el('frontNum').textContent=done?'—':on?'ON':' '+dist(403)+' yd';
+el('lieNum').textContent=done?'Holed':g.lie;
+el('backText').textContent=done?'Practice hole complete':on?'Green zoom active · Play your putt':`To green · Front ${dist(403)} yd · Centre ${dist(420)} yd · Back ${dist(436)} yd`;
+el('scoreBadge').textContent=done?formatScore():g.strokes===0?'EVEN PAR':`SHOT ${g.strokes+1}`;
+el('stepLabel').textContent=done?'SCORECARD':`SHOT ${g.strokes+1} · ${on?'ON THE GREEN':g.phase==='tee'?'ON THE TEE':'APPROACH'}`;
+el('actionTitle').textContent=done?'Practice hole finished':on?'Read your putt':g.phase==='tee'?'Plan your tee shot':'Plan your next shot';
+el('actionSubtitle').textContent=done?'Your real career stays unchanged.':on?'Choose your putt pace and stroke strength. The camera is zoomed onto the green.':g.phase==='tee'?'Choose the club, trajectory, shot shape and landing target.':`${Math.round(toPin())} yards to the pin from ${g.lie.toLowerCase()}. Choose your next shot.`;
+el('playControls').classList.toggle('hidden',done);el('endControls').classList.toggle('hidden',!done);el('shotStatus').textContent=done?'HOLE COMPLETE':anim?'BALL MOVING…':on?'Putting green':'Ready for next shot →';
+el('viewLabel').textContent=on?'GREEN ZOOM':'FULL HOLE';el('zoomLabel').textContent=on?'PUTTING':'WIND ← 10 MPH';
+if(done){const vs=g.strokes-4;el('finishName').textContent=vs<=-2?'Eagle or better!':vs===-1?'Birdie!':vs===0?'Par':vs===1?'Bogey':vs===2?'Double bogey':`+${vs} on this hole`;el('finishLine').textContent=`${g.strokes} strokes${g.penalties?` including ${g.penalties} penalty ${g.penalties===1?'stroke':'strokes'}`:''}. Play again to try a different strategy.`;}
+if(!done){
+ el('aimHeading').textContent=on?'4. Putt pace':'4. Aim point';if(on){g.club='putter';el('flightChoices').parentElement.classList.add('hidden');el('shapeGroup').classList.add('hidden');el('powerName').textContent='Putt distance control';el('powerHelp').textContent='90–110% changes the pace of your putt';el('power').min='90';el('power').max='110';g.power=cap(g.power,90,110);}
+ else{el('flightChoices').parentElement.classList.remove('hidden');el('shapeGroup').classList.remove('hidden');el('powerName').textContent='5. Swing power';el('powerHelp').textContent='Affects carry and dispersion';el('power').min=toPin()<70?'15':'65';el('power').max='110';}
+ const available=flightOptions();if(!on&&!available.includes(g.flight))g.flight=available[0];
+ makeClubs();if(!on){buttonGroup('flightChoices',flightModes.filter(f=>available.includes(f.id)).map(f=>({id:f.id,label:f.label})),g.flight,v=>{g.flight=v});buttonGroup('shapeChoices',[{id:'straight',label:'Straight'},{id:'draw',label:'Draw ↶'},{id:'fade',label:'Fade ↷'}],g.shape,v=>{g.shape=v});}
+ if(on)buttonGroup('aimChoices',[{id:'lag',label:'Lag'},{id:'standard',label:'Normal'},{id:'firm',label:'Firm'}],['lag','standard','firm'].includes(g.aim)?g.aim:'standard',v=>g.aim=v);
+ else buttonGroup('aimChoices',[{id:'left',label:'← Left'},{id:'centre',label:'Centre'},{id:'right',label:'Right →'}],g.aim,v=>g.aim=v);
+ el('power').value=g.power;el('powerOut').textContent=g.power+'%';
+ if(on){const feet=Math.round(toPin()*3),p=makeChance(feet,g.aim);el('previewCarry').textContent=feet+' ft';el('previewEnd').textContent=Math.round(100*p)+'%';el('previewWind').textContent='Minimal';el('tip').textContent='Putt with '+g.aim+' pace. Lagging limits three-putt risk; firm strokes can run further past the hole.';el('hit').textContent='PUTT FOR THE HOLE →';}
+ else{const est=projection(true);el('previewCarry').textContent=Math.round(est.carry)+' yd';el('previewEnd').textContent=est.after+' yd';el('previewWind').textContent='← '+Math.abs(Math.round(est.wind))+' yd';el('tip').textContent=g.lie==='Bunker'?'Sand reduces distance and consistency. A splash shot or safe escape could be best.':g.lie==='Rough'||g.lie==='Greenside rough'||g.lie==='Long rough'?'A poor lie reduces carry and increases dispersion. Consider a lofted club and safer target.':`10 mph wind from right to left. ${g.aim==='right'?'Right aim risks the water between roughly 195–375 yd.':g.aim==='left'?'Aiming left avoids water, but a wide miss may find rough or a bunker.':'The centre target gives the most balanced line.'}`;el('hit').textContent='HIT '+club().label.toUpperCase()+' →';}
+ el('hit').disabled=!!anim;
+ }
+ el('logCount').textContent=`· ${g.history.length} played`;el('log').innerHTML=g.history.length?'':'';
+ if(!g.history.length)el('log').innerHTML='<p class="hint">Your shot-by-shot results will appear here.</p>';
+ else for(let i=g.history.length-1;i>=0;i--){let h=g.history[i];const wrap=document.createElement('div');wrap.className='log-entry';const headline=document.createElement('strong');headline.textContent=`SHOT ${i+1} · ${h.club}`;const p=document.createElement('p');p.textContent=h.message;wrap.appendChild(headline);wrap.appendChild(p);el('log').appendChild(wrap)}
+ draw();save();}
+function makeChance(feet,style){let base=feet<=3?.96:feet<=5?.81:feet<=8?.52:feet<=12?.30:feet<=20?.16:feet<=30?.075:feet<=50?.03:.012;const powerFactor=1-Math.abs(g.power-100)*.017;return cap(base*(style==='lag'?.78:style==='firm'?1.09:1)*powerFactor,.008,.97)}
+function makePutt(){let feet=toPin()*3,mode=['lag','standard','firm'].includes(g.aim)?g.aim:'standard';let made=Math.random()<makeChance(feet,mode);let end;if(made){end={x:0,y:420}}else{let pacePenalty=Math.abs(g.power-100)/10*(mode==='firm'?5.5:3.5);let leave=cap((mode==='lag'?.105:mode==='firm'?.25:.16)*feet+pacePenalty+Math.abs(normal())*2.2,1.4,mode==='firm'?24:16);let angle=rnd(0,Math.PI*2);end={x:(leave/3)*Math.cos(angle),y:420+(leave/3)*Math.sin(angle)};if(!onGreen(end))end={x:end.x*.7,y:420+(end.y-420)*.7};}return{start:{...g.ball},end,carry:0,roll:feet/3,club:'Putter',message:made?`${Math.round(feet)}-foot ${mode} putt drops into the cup.`:`${Math.round(feet)}-foot ${mode} putt misses; ${Math.round(Math.hypot(end.x,420-end.y)*3)} feet left.`,lie:made?'Holed':'Green',penalty:0,done:made,putt:true};}
+function makeGolfShot(){let selected=club(),f=flight(),result=projection(false),end=result.dest,lie=lieAt(end.x,end.y),penalty=0;let report;
+if(lie==='Water hazard'){
+ penalty=1;const landing={...end};end={x:38,y:cap(end.y-18,12,390)};lie='Penalty drop';report=`${Math.round(result.carry)} yd carry into the right-side water. One penalty stroke; dropped at ${Math.round(toPin(end))} yd from the pin.`;result.visualEnd=landing;
+}else{
+ const actualDist=Math.round(Math.hypot(end.x-g.ball.x,end.y-g.ball.y));const rem=Math.round(toPin(end));report=`${Math.round(result.carry)} yd carry + ${Math.round(result.roll)} yd roll (${actualDist} yd total). ${lie}. ${rem} yd left to the pin.`;
+}
+return{start:{...g.ball},end,visualEnd:result.visualEnd||end,carry:result.carry,roll:result.roll,club:`${selected.label} · ${f.label} · ${labels[g.shape]||g.shape}`,message:report,lie,penalty,done:false,putt:false};}
+function animateShot(shot){const duration=shot.putt?1250:2100,start=performance.now();anim={current:{...shot.start},progress:0,putt:!!shot.putt};lastTrail=null;el('flightToast').textContent=shot.putt?'PUTT ROLLING…':'BALL IN FLIGHT';el('flightToast').classList.add('active');el('hit').disabled=true;const trajectory=[];
+function frame(now){let t=cap((now-start)/duration,0,1);anim.progress=t;const carryRatio=shot.putt?1:shot.carry/Math.max(1,shot.carry+shot.roll);
+let progress=t<.77?(t/.77)*carryRatio:carryRatio+((t-.77)/.23)*(1-carryRatio);progress=cap(progress,0,1);
+let from=shot.start,to=shot.visualEnd||shot.end;let sway=(shot.putt?0:Math.sin(Math.PI*progress)*((g.shape==='draw'?-6:g.shape==='fade'?6:0)));
+let current={x:from.x+(to.x-from.x)*progress+sway,y:from.y+(to.y-from.y)*progress};anim.current=current;
+if(trajectory.length===0||Math.hypot(trajectory[trajectory.length-1].x-current.x,trajectory[trajectory.length-1].y-current.y)>1.8)trajectory.push({...current});
+lastTrail=trajectory;draw();if(t<1){requestAnimationFrame(frame)}else{anim=null;el('flightToast').classList.remove('active');g.ball=shot.end;g.strokes+=1+shot.penalty;g.penalties+=shot.penalty;g.lie=shot.lie;
+if(shot.done)g.phase='complete';else if(shot.lie==='Green')g.phase='green';else g.phase=g.strokes===0?'tee':'approach';
+g.history.push({club:shot.club,message:shot.message});if(g.phase==='green'){g.aim='standard';g.power=100;g.club='putter'}else if(g.phase==='approach'){g.aim='centre';g.flight=shot.lie==='Bunker'?'splash':toPin()<70?'chip':'normal';g.shape='straight';g.club=recommendedClub();g.power=toPin()<70?cap(Math.round(100*toPin()/(club().carry*(g.flight==='chip'?.53:g.flight==='splash'?.64:1))/5)*5,15,110):100}
+lastTrail=null;render();}}
+requestAnimationFrame(frame)}
+function hit(){if(anim||g.phase==='complete')return;animateShot(g.phase==='green'?makePutt():makeGolfShot())}
+function reset(){if(anim)return;g=createGame();lastTrail=null;render()}
+el('hit').addEventListener('click',hit);el('resetTop').addEventListener('click',reset);el('restartBtn').addEventListener('click',reset);el('power').addEventListener('input',e=>{g.power=+e.target.value;el('powerOut').textContent=g.power+'%';const est=projection(true);if(g.phase!=='green'){el('previewCarry').textContent=Math.round(est.carry)+' yd';el('previewEnd').textContent=est.after+' yd';el('previewWind').textContent='← '+Math.abs(Math.round(est.wind))+' yd';}save();draw()});
+window.addEventListener('resize',setupCanvas);render();requestAnimationFrame(setupCanvas);
+})();
+</script>
+</body>
+</html>
