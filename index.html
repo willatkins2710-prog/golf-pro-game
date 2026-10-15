@@ -63,11 +63,12 @@ try{const saved=JSON.parse(localStorage.getItem(KEY)||'null');if(saved&&saved.ba
 const canvas=el('course'),ctx=canvas.getContext('2d');let dims={w:360,h:455,dpr:1},lastTrail=null;
 const cap=(n,a,b)=>Math.max(a,Math.min(b,n));const rnd=(a,b)=>a+Math.random()*(b-a);const normal=()=>{let u=1-Math.random(),v=1-Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
 const club=()=>clubs.find(c=>c.id===g.club)||clubs[1];const flight=()=>flightModes.find(f=>f.id===g.flight)||flightModes[0];
-const centery=y=>4*Math.sin(y/77)-2.5;
+const layout=()=>({n:cfg().number||1,curve:((cfg().number||1)%6)*.39,offset:(((cfg().number||1)*13)%15)-7,by:(((cfg().number||1)%5)-2)*5,bx:(((cfg().number||1)%4)-2)*3});
+const centery=y=>4*Math.sin(y/77+layout().curve)+layout().offset;
 function toPin(pos=g.ball){return Math.hypot(420-pos.y,pos.x)*scale()}
 function dist(y){return Math.max(0,Math.round(Math.hypot(y-g.ball.y,g.ball.x)*scale()))}
 function onGreen(pos){return ((pos.x/25)**2+((pos.y-420)/17)**2)<1}
-function isSand(x,y){return ((x+42)/12)**2+((y-298)/23)**2<1||((x+31)/11)**2+((y-410)/14)**2<1||((x-31)/12)**2+((y-431)/12)**2<1}
+function isSand(x,y){const l=layout();return ((x+42-l.bx)/12)**2+((y-298-l.by)/23)**2<1||((x+31-l.bx)/11)**2+((y-410-l.by)/14)**2<1||((x-31+l.bx)/12)**2+((y-431-l.by)/12)**2<1}
 function isWater(x,y){return cfg().water!==false&&x>49&&y>194&&y<377}
 function lieAt(x,y){if(isWater(x,y))return'Water hazard';if(onGreen({x,y}))return'Green';if(isSand(x,y))return'Bunker';if(y>=397&&y<=453)return'Greenside rough';if(y>445)return'Long rough';return Math.abs(x-centery(y)) < 31-(y>280&&y<335?4:0)?'Fairway':'Rough'}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(g))}catch(e){}}
@@ -112,7 +113,7 @@ ctx.save();ctx.beginPath();const L=edgePts(-32),R=edgePts(32).reverse();ctx.move
 // water right
 if(cfg().water!==false){ctx.beginPath();const water=[{x:55,y:195},{x:85,y:196},{x:103,y:221},{x:111,y:290},{x:104,y:376},{x:72,y:378},{x:61,y:351},{x:68,y:308},{x:51,y:261}];ctx.moveTo(px(water[0].x,v),py(water[0].y,v));water.slice(1).forEach(p=>ctx.lineTo(px(p.x,v),py(p.y,v)));ctx.closePath();const waterGrad=ctx.createLinearGradient(px(40,v),0,px(100,v),0);waterGrad.addColorStop(0,'#72bbcb');waterGrad.addColorStop(1,'#276b91');ctx.fillStyle=waterGrad;ctx.fill();ctx.strokeStyle='#b1dbd0';ctx.lineWidth=1.5;ctx.stroke();}
 // sand bunkers
-ellipse(-42,298,12,23,'#ebd4a0',v,-.35);ellipse(-31,410,11,14,'#ebd4a0',v,.4);ellipse(31,431,12,12,'#ebd4a0',v,.4);
+ellipse(-42+layout().bx,298+layout().by,12,23,'#ebd4a0',v,-.35);ellipse(-31+layout().bx,410+layout().by,11,14,'#ebd4a0',v,.4);ellipse(31-layout().bx,431+layout().by,12,12,'#ebd4a0',v,.4);
 // Green collar & green
 ellipse(0,420,30,22,'#54975a',v);ellipse(0,420,25,17,'#a1cc87',v);
 for(let i=-2;i<=2;i++){ctx.globalAlpha=.09;ellipse(i*8,420,4,15,i%2?'#285d37':'#fff',v)}ctx.globalAlpha=1;
@@ -164,7 +165,7 @@ if(!done){
  else buttonGroup('aimChoices',[{id:'left',label:'← Left'},{id:'centre',label:'Centre'},{id:'right',label:'Right →'}],g.aim,v=>g.aim=v);
  el('power').value=g.power;el('powerOut').textContent=g.power+'%';
  if(on){const feet=Math.round(toPin()*3),p=makeChance(feet,g.aim);el('previewCarry').textContent=feet+' ft';el('previewEnd').textContent=Math.round(100*p)+'%';el('previewWind').textContent='Minimal';el('tip').textContent='Putt with '+g.aim+' pace. Lagging limits three-putt risk; normal pace gives more chances to hole the putt.';el('hit').textContent='PUTT FOR THE HOLE →';}
- else{const est=projection(true);el('previewCarry').textContent=Math.round(est.carry)+' yd';el('previewEnd').textContent=est.after+' yd';el('previewWind').textContent=(est.wind<0?'← ':'→ ')+Math.abs(Math.round(est.wind))+' yd';el('tip').textContent=g.lie==='Bunker'?'Sand reduces distance and consistency. A splash shot or safe escape could be best.':g.lie==='Rough'||g.lie==='Greenside rough'||g.lie==='Long rough'?'A poor lie reduces carry and increases dispersion. Consider a lofted club and safer target.':`${cfg().wind} mph wind from ${cfg().windX<0?'right to left':'left to right'}. ${g.aim==='right'?'Right aim risks the water between roughly 195–375 yd.':g.aim==='left'?'Aiming left avoids water, but a wide miss may find rough or a bunker.':'The centre target gives the most balanced line.'}`;el('hit').textContent=isShort?'PLAY SHORT GAME SHOT →':'HIT '+club().label.toUpperCase()+' →';}
+ else{const est=projection(true);el('previewCarry').textContent=Math.round(est.carry)+' yd';el('previewEnd').textContent=est.after+' yd';el('previewWind').textContent=(est.wind<0?'← ':'→ ')+Math.abs(Math.round(est.wind))+' yd';el('tip').textContent=g.lie==='Bunker'?'Sand reduces distance and consistency. A splash shot or safe escape could be best.':g.lie==='Rough'||g.lie==='Greenside rough'||g.lie==='Long rough'?'A poor lie reduces carry and increases dispersion. Consider a lofted club and safer target.':`${cfg().wind} mph wind from ${cfg().windX<0?'right to left':'left to right'}. ${g.aim==='right'?(cfg().water?'Right aim increases the risk of finding the water.':'A right miss may find the rough.'):g.aim==='left'?(cfg().water?'Aiming left avoids the water, but risks the rough or bunker.':'The left side risks rough or a bunker.'):'The centre target gives the most balanced line.'}`;el('hit').textContent=isShort?'PLAY SHORT GAME SHOT →':'HIT '+club().label.toUpperCase()+' →';}
  el('hit').disabled=!!anim;
  }
  el('logCount').textContent=`· ${g.history.length} played`;el('log').innerHTML=g.history.length?'':'';
