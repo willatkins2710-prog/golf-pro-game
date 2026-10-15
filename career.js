@@ -163,10 +163,20 @@ document.body.insertAdjacentHTML("beforeend",'<div id="stickyShot"><div class="i
 byId("backToCareer").addEventListener("click",()=>showHome("home"));
 byId("showScorecard").addEventListener("click",()=>act("scorecard"));
 byId("fixedSkip").addEventListener("click",skipDialog);
-byId("fixedHit").addEventListener("click",()=>{let s=getCurrent();if(!s||engine.isAnimating()||animatingShot)return;if(s.scores[s.current])return nextHole();
-animatingShot=true;renderGameBar();
-const top=Math.max(0,byId("roundTopBar").getBoundingClientRect().top+window.scrollY-5);
-window.scrollTo({top,behavior:"instant"});requestAnimationFrame(()=>{if(getCurrent()){engine.hit();setTimeout(()=>{animatingShot=false;renderGameBar()},window.golfFastAnimations?850:2300)}else{animatingShot=false}})});
+byId("fixedHit").addEventListener("click",()=>{
+ const session=getCurrent();
+ if(!session||engine.isAnimating()||animatingShot)return;
+ if(session.scores[session.current]){nextHole();return}
+ animatingShot=true;
+ renderGameBar();
+ const top=Math.max(0,byId("roundTopBar").getBoundingClientRect().top+window.scrollY-5);
+ window.scrollTo({top,behavior:"instant"});
+ requestAnimationFrame(()=>{
+   if(getCurrent()){
+     engine.hit();
+     setTimeout(()=>{animatingShot=false;renderGameBar()},window.golfFastAnimations?850:2300);
+   }else{animatingShot=false}
+ });
 });
 byId("dialogRoot").addEventListener("click",e=>{if(e.target.id==="dialogRoot")closeDialog()});
 window.addEventListener("golfpro:render",e=>{let s=getCurrent();if(!s)return;const g=e.detail.state;if(!s.scores[s.current])s.engineState=g;save();if(!byId("gameApp").classList.contains("hidden"))renderGameBar()});
