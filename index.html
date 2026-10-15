@@ -73,7 +73,7 @@ function lieAt(x,y){if(isWater(x,y))return'Water hazard';if(onGreen({x,y}))retur
 function save(){try{localStorage.setItem(KEY,JSON.stringify(g))}catch(e){}}
 function projection(preview=false){let selected=club(),f=flight();if(g.phase==='green')return{carry:0,roll:0,wind:0,dest:{x:0,y:420},after:0};
 let lieMod=g.lie==='Rough'?.89:g.lie==='Bunker'?.72:g.lie==='Greenside rough'?.86:g.lie==='Long rough'?.77:1;
-let carry=selected.carry*(g.power/100)*f.mult*lieMod;
+let carry=selected.carry*(g.power/100)*f.mult*lieMod*(1+(cfg().windY||0)/180);
 let wind=cfg().windX*(carry/195)*.89*f.wind/scale();
 let roll=(selected.kind==='wood'?14:selected.kind==='iron'?6:2)*f.roll*(g.lie==='Fairway'||g.lie==='Tee'?1:.28);
 if(g.flight==='chip')roll=Math.max(5,carry*.65);
@@ -150,7 +150,7 @@ el('stepLabel').textContent=done?'SCORECARD':`SHOT ${g.strokes+1} · ${on?'ON TH
 el('actionTitle').textContent=done?'Practice hole finished':on?'Read your putt':g.phase==='tee'?'Plan your tee shot':'Plan your next shot';
 el('actionSubtitle').textContent=done?'Your real career stays unchanged.':on?'Choose your putt pace and stroke strength. The camera is zoomed onto the green.':g.phase==='tee'?'Choose the club, trajectory, shot shape and landing target.':`${Math.round(toPin())} yards to the pin from ${g.lie.toLowerCase()}. Choose your next shot.`;
 el('playControls').classList.toggle('hidden',done);el('endControls').classList.toggle('hidden',!done);el('shotStatus').textContent=done?'HOLE COMPLETE':anim?'BALL MOVING…':on?'Putting green':'Ready for next shot →';
-el('viewLabel').textContent=on?'GREEN ZOOM':'FULL HOLE';el('zoomLabel').textContent=on?'PUTTING':'WIND ← 10 MPH';
+el('viewLabel').textContent=on?'GREEN ZOOM':'FULL HOLE';el('zoomLabel').textContent=on?'PUTTING':'WIND '+(cfg().windX<0?'←':'→')+' '+cfg().wind+' MPH';
 if(done){const vs=g.strokes-cfg().par;el('finishName').textContent=vs<=-2?'Eagle or better!':vs===-1?'Birdie!':vs===0?'Par':vs===1?'Bogey':vs===2?'Double bogey':`+${vs} on this hole`;el('finishLine').textContent=`${g.strokes} strokes${g.penalties?` including ${g.penalties} penalty ${g.penalties===1?'stroke':'strokes'}`:''}. Play again to try a different strategy.`;}
 if(!done){
  const isShort=!on&&toPin()<50;
@@ -164,7 +164,7 @@ if(!done){
  else buttonGroup('aimChoices',[{id:'left',label:'← Left'},{id:'centre',label:'Centre'},{id:'right',label:'Right →'}],g.aim,v=>g.aim=v);
  el('power').value=g.power;el('powerOut').textContent=g.power+'%';
  if(on){const feet=Math.round(toPin()*3),p=makeChance(feet,g.aim);el('previewCarry').textContent=feet+' ft';el('previewEnd').textContent=Math.round(100*p)+'%';el('previewWind').textContent='Minimal';el('tip').textContent='Putt with '+g.aim+' pace. Lagging limits three-putt risk; firm strokes can run further past the hole.';el('hit').textContent='PUTT FOR THE HOLE →';}
- else{const est=projection(true);el('previewCarry').textContent=Math.round(est.carry)+' yd';el('previewEnd').textContent=est.after+' yd';el('previewWind').textContent='← '+Math.abs(Math.round(est.wind))+' yd';el('tip').textContent=g.lie==='Bunker'?'Sand reduces distance and consistency. A splash shot or safe escape could be best.':g.lie==='Rough'||g.lie==='Greenside rough'||g.lie==='Long rough'?'A poor lie reduces carry and increases dispersion. Consider a lofted club and safer target.':`10 mph wind from right to left. ${g.aim==='right'?'Right aim risks the water between roughly 195–375 yd.':g.aim==='left'?'Aiming left avoids water, but a wide miss may find rough or a bunker.':'The centre target gives the most balanced line.'}`;el('hit').textContent=isShort?'PLAY SHORT GAME SHOT →':'HIT '+club().label.toUpperCase()+' →';}
+ else{const est=projection(true);el('previewCarry').textContent=Math.round(est.carry)+' yd';el('previewEnd').textContent=est.after+' yd';el('previewWind').textContent=(est.wind<0?'← ':'→ ')+Math.abs(Math.round(est.wind))+' yd';el('tip').textContent=g.lie==='Bunker'?'Sand reduces distance and consistency. A splash shot or safe escape could be best.':g.lie==='Rough'||g.lie==='Greenside rough'||g.lie==='Long rough'?'A poor lie reduces carry and increases dispersion. Consider a lofted club and safer target.':`${cfg().wind} mph wind from ${cfg().windX<0?'right to left':'left to right'}. ${g.aim==='right'?'Right aim risks the water between roughly 195–375 yd.':g.aim==='left'?'Aiming left avoids water, but a wide miss may find rough or a bunker.':'The centre target gives the most balanced line.'}`;el('hit').textContent=isShort?'PLAY SHORT GAME SHOT →':'HIT '+club().label.toUpperCase()+' →';}
  el('hit').disabled=!!anim;
  }
  el('logCount').textContent=`· ${g.history.length} played`;el('log').innerHTML=g.history.length?'':'';
@@ -180,7 +180,7 @@ if(lie==='Water hazard'){
  const actualDist=Math.round(Math.hypot(end.x-g.ball.x,end.y-g.ball.y));const rem=Math.round(toPin(end));report=`${Math.round(result.carry)} yd carry + ${Math.round(result.roll)} yd roll (${actualDist} yd total). ${lie}. ${rem} yd left to the pin.`;
 }
 return{start:{...g.ball},end,visualEnd:result.visualEnd||end,carry:result.carry,roll:result.roll,club:`${selected.label} · ${f.label} · ${labels[g.shape]||g.shape}`,message:report,lie,penalty,done:false,putt:false};}
-function animateShot(shot){const duration=shot.putt?1250:2100,start=performance.now();anim={current:{...shot.start},progress:0,putt:!!shot.putt};lastTrail=null;el('flightToast').textContent=shot.putt?'PUTT ROLLING…':'BALL IN FLIGHT';el('flightToast').classList.add('active');el('hit').disabled=true;const trajectory=[];
+function animateShot(shot){const duration=window.golfFastAnimations?(shot.putt?520:850):(shot.putt?1250:2100),start=performance.now();anim={current:{...shot.start},progress:0,putt:!!shot.putt};lastTrail=null;el('flightToast').textContent=shot.putt?'PUTT ROLLING…':'BALL IN FLIGHT';el('flightToast').classList.add('active');el('hit').disabled=true;const trajectory=[];
 function frame(now){let t=cap((now-start)/duration,0,1);anim.progress=t;const carryRatio=shot.putt?1:shot.carry/Math.max(1,shot.carry+shot.roll);
 let progress=t<.77?(t/.77)*carryRatio:carryRatio+((t-.77)/.23)*(1-carryRatio);progress=cap(progress,0,1);
 let from=shot.start,to=shot.visualEnd||shot.end;let sway=(shot.putt?0:Math.sin(Math.PI*progress)*((g.shape==='draw'?-6:g.shape==='fade'?6:0)));
@@ -193,7 +193,7 @@ lastTrail=null;render();if(g.phase==='complete')window.dispatchEvent(new CustomE
 requestAnimationFrame(frame)}
 function hit(){if(anim||g.phase==='complete')return;animateShot(g.phase==='green'?makePutt():makeGolfShot())}
 function reset(){if(anim)return;g=createGame();lastTrail=null;render()}
-el('hit').addEventListener('click',hit);el('resetTop').addEventListener('click',reset);el('restartBtn').addEventListener('click',reset);el('power').addEventListener('input',e=>{g.power=+e.target.value;el('powerOut').textContent=g.power+'%';const est=projection(true);if(g.phase!=='green'){el('previewCarry').textContent=Math.round(est.carry)+' yd';el('previewEnd').textContent=est.after+' yd';el('previewWind').textContent='← '+Math.abs(Math.round(est.wind))+' yd';}save();draw()});
+el('hit').addEventListener('click',hit);el('resetTop').addEventListener('click',reset);el('restartBtn').addEventListener('click',reset);el('power').addEventListener('input',e=>{g.power=+e.target.value;el('powerOut').textContent=g.power+'%';const est=projection(true);if(g.phase!=='green'){el('previewCarry').textContent=Math.round(est.carry)+' yd';el('previewEnd').textContent=est.after+' yd';el('previewWind').textContent=(est.wind<0?'← ':'→ ')+Math.abs(Math.round(est.wind))+' yd';}save();draw()});
 window.GolfEngine={state:()=>JSON.parse(JSON.stringify(g)),newHole:()=>{g=createGame();lastTrail=null;render();return g;},restore:s=>{g={...createGame(),...s};lastTrail=null;render();},configure:c=>{window.golfConfig=c;render();requestAnimationFrame(setupCanvas);},render,hit,resize:setupCanvas,remaining:toPin,isAnimating:()=>!!anim};
 window.addEventListener('resize',setupCanvas);render();requestAnimationFrame(setupCanvas);
 })();
