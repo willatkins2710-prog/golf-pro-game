@@ -25,7 +25,7 @@ function makeCourse(eventIndex){
  return baseCourse.map((h,i)=>{
    const v=(i+eventIndex*5)%18,shape=shapes[v];
    const bend=shape==="dogleg-left"?-53:shape==="dogleg-right"?52:shape==="sweep-left"?-29:shape==="sweep-right"?28:shape==="s-bend"?(i%2?37:-38):0;
-   const waterType=waters[(i+eventIndex*3)%18],yards=Math.max(135,h.yards+(eventIndex===0?0:(((i*7+eventIndex*11)%7)-3)*5));
+   const waterType=waters[(i+eventIndex*3)%18],yards=Math.max(135,h.yards+(eventIndex===0?0:(((i*5+eventIndex*11)%9)-4)*4));
    return {...h,yards,shape,bend,waterType,water:waterType!=="none",fairwayWidth:[31,27,35,24,32,29,30,26,33][(v+eventIndex)%9],bunkerPattern:(v+eventIndex)%5,greenWidth:[24,29,22,27][(i+eventIndex)%4],greenDepth:[17,15,20,18][(v+eventIndex)%4]};
  });
 }
@@ -34,6 +34,9 @@ let career=blank();
 try{let v=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");if(v&&v.attributes&&v.tournament){career={...blank(),...v,settings:{...blank().settings,...v.settings}}}}catch(e){}
 career.eventIndex=Number.isInteger(career.eventIndex)?career.eventIndex:0;
 career.eventResults=Array.isArray(career.eventResults)?career.eventResults:[];
+// Legacy saves from the former 4-round format may be marked as missed-cut.
+// Treat these as finished events rather than locking the career on the old cut state.
+if(career.tournament?.status==="cut")career.tournament.status="completed";
 let course=makeCourse(career.session?.eventIndex??career.eventIndex);
 window.golfFastAnimations=!!career.settings.fast;
 function syncGolfer(){window.golfPlayerStats={...career.attributes};window.golfEquipment={...career.equipment}}
