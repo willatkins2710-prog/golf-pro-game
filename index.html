@@ -15,7 +15,7 @@
 @media(max-width:370px){.map-wrap canvas{height:355px}.metric .v{font-size:16px}.metric .v.lie{font-size:11px}.app{padding:12px 9px 60px}.control-panel{padding:13px}.header-line{flex-direction:column}.top-pill{width:100%}}
 @media(prefers-reduced-motion:reduce){.primary{transition:none}}
 </style>
-<link rel="stylesheet" href="career.css?v=4" /></head>
+<link rel="stylesheet" href="career.css?v=5" /></head>
 <body>
 <main class="app hidden" id="gameApp">
 <header class="mast"><div class="brand"><div class="brandmark">G</div><div><span class="overline">Golf Pro · Career Simulator</span><h1>ROAD TO WORLD NO. 1</h1></div></div><button id="resetTop" class="ghost-btn" type="button">↻ Replay hole</button></header>
@@ -87,10 +87,15 @@ lateral*=1+(cfg().wind||0)/120;
  if(selected.kind==='iron'&&(window.golfEquipment?.irons||60)>60)lateral*=.95;
  if(g.power>100)lateral*=1+(g.power-100)*.025;
  if(g.quickSelection===2)lateral*=cap(1+((55-(skill.mental||45))*.012),.8,1.5);
+ if(g.quickShotKey && (g.phase==='approach'||g.phase==='tee'&&cfg().par===3)&&toPin()<=220&&toPin()>55){
+  lateral*=g.quickSelection===0?.84:g.quickSelection===2?1.75:1;
+ }
  if(g.flight==='punch')lateral*=.78;
  if(g.flight==='flop')lateral*=1.3;
  if(g.lie==='Rough'||g.lie==='Bunker'||g.lie==='Long rough')lateral*=1.45;
- const carry=(selected.kind==='wood'?11:selected.kind==='iron'?7:4)*(.75+g.power/240)*cap(1+(60-rating)*.009,.62,1.42);
+ let carry=(selected.kind==='wood'?11:selected.kind==='iron'?7:4)*(.75+g.power/240)*cap(1+(60-rating)*.009,.62,1.42);
+ if(g.quickShotKey && (g.phase==='approach'||g.phase==='tee'&&cfg().par===3)&&toPin()<=220&&toPin()>55){carry*=g.quickSelection===0?.85:g.quickSelection===2?1.55:1;}
+
  return{lateral,carry,rating};
 }
 function projection(preview=false){let selected=club(),f=flight();if(g.phase==='green')return{carry:0,roll:0,wind:0,dest:{x:0,y:420},after:0};
@@ -107,6 +112,12 @@ if(g.quickSelection===0&&g.phase==='tee'&&cfg().par!==3)aimOffset=-3;
 if(g.quickSelection===2&&g.phase==='tee'&&cfg().par!==3)aimOffset=26;
 let shape={straight:0,draw:-8,fade:8}[g.shape]||0;
 let targetX=centery(endY)+aimOffset+shape+wind;
+if(g.quickShotKey && Number.isInteger(g.quickSelection) && (g.phase==='approach'||g.phase==='tee'&&cfg().par===3) && toPin()>55 && toPin()<=220){
+  // Safe = front of green, balanced = broad centre, attack = exact flag.
+  const targets=[{x:-11,y:408},{x:-9,y:414},{x:0,y:420}];
+  const t=targets[g.quickSelection];
+  targetX=centery(t.y)+t.x+wind*.15;
+}
 // Caddie options compensate for the forecast crosswind. Wind still worsens dispersion.
 if(Number.isInteger(g.quickSelection)&&g.quickShotKey)targetX-=wind*.85;
 if(preview)return{carry,roll,wind,dest:{x:targetX,y:endY},after:Math.round(Math.hypot(420-endY,targetX)*scale())};
@@ -211,29 +222,41 @@ function quickPresets(){
     option("ATTACK",5,5,"driver","normal","right",110,"Chase extra distance · hazard risk","draw")
    ];
  }else if(par3){
-   const ideal=selectNearest(d),conservative=selectNearest(d*.9);
+   const travel=y=>Math.max(1,Math.abs(y-g.ball.y)*scale());
+   const safe=selectNearest(travel(408)-6),middle=selectNearest(travel(414)-5),attacker=selectNearest(travel(420)-2);
    list=[
-    option("SAFE",1,2,conservative.id,"normal","left",presetPower(d*.93,conservative.id,"normal"),"Aim left side of green, away from trouble"),
-    option("BALANCED",3,3,ideal.id,"normal","centre",presetPower(d,ideal.id,"normal"),"Aim for middle of green"),
-    option("ATTACK",5,5,ideal.id,"high","right",presetPower(d*1.03,ideal.id,"high"),"Attack the pin with a high approach")
+    option("SAFE",1,2,safe.id,"normal","left",presetPower(travel(408)-6,safe.id,"normal"),"Aim safely for the front-left"),
+    option("BALANCED",3,3,middle.id,"normal","centre",presetPower(travel(414)-5,middle.id,"normal"),"Find the green and make par"),
+    option("ATTACK",5,5,attacker.id,"high","right",presetPower(travel(420)-2,attacker.id,"high"),"Fire at the flag · bigger birdie chance")
    ];
  }else{
-   const optimal=selectNearest(d),safeTarget=d>200?Math.min(175,d-85):d*.88;
-   const safer=selectNearest(safeTarget),attacker=selectNearest(d*1.03);
-   list=[
-    option("SAFE",1,2,safer.id,"normal","left",presetPower(safeTarget,safer.id,"normal"),d>200?"Lay up · leave a comfortable short shot":"Leave the ball short-left of the flag"),
-    option("BALANCED",3,3,optimal.id,"normal","centre",presetPower(d,optimal.id,"normal"),"Target the centre of the green"),
-    option("ATTACK",5,5,attacker.id,"high","right",presetPower(d*1.03,attacker.id,"high"),"Chase a close putt · greater hazard risk")
-   ];
+   const travel=y=>Math.max(1,Math.abs(y-g.ball.y)*scale());
+   const goingForGreen=d<=220;
+   if(goingForGreen){
+     const safe=selectNearest(travel(408)-6),middle=selectNearest(travel(414)-5),attacker=selectNearest(travel(420)-2);
+     list=[
+      option("SAFE",1,2,safe.id,"normal","left",presetPower(travel(408)-6,safe.id,"normal"),"Play for the safe part of the green"),
+      option("BALANCED",3,3,middle.id,"normal","centre",presetPower(travel(414)-5,middle.id,"normal"),"Aim for a comfortable two-putt"),
+      option("ATTACK",5,5,attacker.id,"high","right",presetPower(travel(420)-2,attacker.id,"high"),"Attack the flag for a close birdie putt")
+     ];
+   }else{
+     const optimal=selectNearest(d),safeTarget=Math.min(175,d-85);
+     const safer=selectNearest(safeTarget),attacker=selectNearest(d);
+     list=[
+      option("SAFE",1,2,safer.id,"normal","centre",presetPower(safeTarget,safer.id,"normal"),"Lay up safely to a favourite distance"),
+      option("BALANCED",3,3,optimal.id,"normal","centre",presetPower(d,optimal.id,"normal"),"Advance towards the green"),
+      option("ATTACK",5,5,attacker.id,"high","right",presetPower(d,attacker.id,"high"),"Go for maximum distance · trouble risk")
+     ];
+   }
  }
  const skill=window.golfPlayerStats||{driving:60,irons:64,short:51,putting:54,mental:45};
  const rating=putt?skill.putting:short?skill.short:tee&&!par3?skill.driving:skill.irons;
  return list.map((q)=>({...q,rating,kind:putt?"Putting":short?"Short Game":tee&&!par3?"Driving":"Iron Play"}));
 }
 function applyQuick(p){g.club=p.clubId;g.flight=p.mode;g.aim=p.aim;g.shape=p.shape;g.power=p.power;}
-function quickPreview(p){
- const before={club:g.club,flight:g.flight,aim:g.aim,shape:g.shape,power:g.power};
- applyQuick(p);
+function quickPreview(p,index){
+ const before={club:g.club,flight:g.flight,aim:g.aim,shape:g.shape,power:g.power,quickSelection:g.quickSelection};
+ applyQuick(p);g.quickSelection=index;
  const estimate=g.phase==="green"?null:projection(true);
  const clubName=(clubs.find(c=>c.id===p.clubId)||clubs[1]).label;
  Object.assign(g,before);
@@ -253,15 +276,15 @@ function shotOdds(q,index,estimate){
    const meanLeave=feet*(q.aim==='lag'?.105:q.aim==='firm'?.25:.16)*cap(1+(54-skill)*.008,.64,1.4);
    const danger=feet<=8?3:feet<=20?5:7;
    const potential=cap((meanLeave-danger+3)/Math.max(5,feet*.24),.04,.91);
-   chances={good:Math.round(make*100),trouble:Math.round((1-make)*potential*100),description:"Putt holed / difficult next putt"};
+   chances={good:Math.round(make*100),close:Math.round((1-make)*(1-potential)*100),trouble:Math.round((1-make)*potential*100),description:"Holed / easy next putt / difficult next putt",firstLabel:"HOLED",secondLabel:"EASY NEXT"};
  }else{
    const clubNow=club(),f=flight(),sig=shotVariability(clubNow);
-   const nominal=estimate||projection(true),origin=g.ball,scaleNow=scale(),beforeDistance=toPin(),isTee=g.phase==='tee'&&cfg().par!==3;
+   const nominal=projection(true),origin=g.ball,scaleNow=scale(),beforeDistance=toPin(),isTee=g.phase==='tee'&&cfg().par!==3;
    const short=beforeDistance<=55,layUp=beforeDistance>200&&q.title==="SAFE"&&!isTee;
    let seed=(Math.imul(cfg().number||1,524287)^Math.imul(g.strokes+1,32452843)^Math.round(origin.x*893)^Math.round(origin.y*631)^Math.imul(index+1,9781))>>>0;
    function unit(){seed=(Math.imul(seed,1664525)+1013904223)>>>0;return(seed+.5)/4294967296}
    function gaussian(){return Math.sqrt(-2*Math.log(Math.max(.000001,unit())))*Math.cos(2*Math.PI*unit())}
-   let strong=0,trouble=0;
+   let strong=0,close=0,trouble=0;
    const runs=1000;
    for(let k=0;k<runs;k++){
      const carry=Math.max(2,nominal.carry+gaussian()*sig.carry);
@@ -270,25 +293,22 @@ function shotOdds(q,index,estimate){
      const x=nominal.dest.x+gaussian()*sig.lateral;
      const y=cap(origin.y+direction*(carry+roll)/scaleNow,-3,463);
      const lie=lieAt(x,y),rem=Math.hypot(420-y,x)*scaleNow;
-     if(isTee){
+     if(isTee||layUp){
        if(lie==='Fairway'&&carry>=nominal.carry*.89)strong++;
-       if(lie==='Water hazard'||lie==='Bunker'||lie==='Rough'||lie==='Long rough')trouble++;
-     }else if(layUp){
-       if(lie==='Fairway'&&carry>=nominal.carry*.89)strong++;
+       if(lie==='Fairway'&&carry>=nominal.carry*.96)close++;
        if(lie==='Water hazard'||lie==='Bunker'||lie==='Rough'||lie==='Long rough')trouble++;
      }else if(short){
-       if(lie==='Green'&&rem<=5)strong++;
+       if(lie==='Green')strong++;
+       if(lie==='Green'&&rem<=5)close++;
        if(lie==='Water hazard'||lie==='Bunker'||rem>15)trouble++;
      }else{
-       if(lie==='Green'&&rem<=18)strong++;
+       if(lie==='Green')strong++;
+       // A close birdie putt means the ball finishes inside 15 feet.
+       if(lie==='Green'&&rem<=5)close++;
        if(lie==='Water hazard'||lie==='Bunker'||(lie!=='Green'&&rem>28))trouble++;
      }
    }
-   chances={
-     good:Math.round(strong*100/runs),
-     trouble:Math.round(trouble*100/runs),
-     description:isTee?"Fairway reached / rough or hazard":layUp?"Successful lay-up / rough or hazard":short?"Within 5 yd / poor recovery":"On green within 18 yd / costly miss"
-   };
+   chances={good:Math.round(strong*100/runs),close:Math.round(close*100/runs),trouble:Math.round(trouble*100/runs),description:isTee?'Fairway / strong drive / rough or hazard':layUp?'Lay-up in fairway / strong advance / trouble':short?'Green / within 15 ft / poor recovery':'Green hit / within 15 ft / costly miss',firstLabel:isTee||layUp?'FAIRWAY': 'GREEN HIT',secondLabel:isTee||layUp?'STRONG DRIVE':'BIRDIE LOOK'};
  }
  Object.assign(g,before);
  return chances;
@@ -307,14 +327,14 @@ function renderQuick(){
  el("quickAdvice").textContent=active.kind+" "+active.rating+" · "+(g.phase==="green"?Math.round(d*3)+" ft to cup":Math.round(d)+" yd to pin")+". % = simulated estimates";
  const container=el("quickChoices");container.innerHTML="";
  options.forEach((q,i)=>{
-   const preview=quickPreview(q),clubName=preview.clubName,estimate=preview.estimate;
+   const preview=quickPreview(q,i),clubName=preview.clubName,estimate=preview.estimate;
    const odds=shotOdds(q,i,estimate);
    const b=document.createElement("button");b.type="button";
    b.className="quick-choice"+(i===quickSelection?" chosen":"");b.setAttribute("aria-pressed",i===quickSelection?"true":"false");
    const primary=g.phase==="green"?q.why:clubName+" · "+q.why;
    const prospect=g.phase==="green"?Math.round(d*3)+" ft to cup":estimate?"~"+Math.round(estimate.carry)+" yd carry · ~"+Math.round(estimate.after)+" yd left":"";
    const percent=n=>n===0?'&lt;1%':n===100?'&gt;99%':n+'%';
-   b.innerHTML='<span class="qc-top"><strong>'+q.title+'</strong><span class="qc-figures">'+clubName+'</span></span><span class="qc-odds"><span class="qc-good">GOOD RESULT <b>'+percent(odds.good)+'</b></span><span class="qc-risk">TROUBLE <b>'+percent(odds.trouble)+'</b></span></span><span class="qc-name">'+q.why+'</span><span class="qc-forecast">'+prospect+'</span><span class="qc-definition">'+odds.description+'</span>';
+   b.innerHTML='<span class="qc-top"><strong>'+q.title+'</strong><span class="qc-figures">'+clubName+'</span></span><span class="qc-odds"><span class="qc-good">'+odds.firstLabel+' <b>'+percent(odds.good)+'</b></span><span class="qc-close">'+odds.secondLabel+' <b>'+percent(odds.close)+'</b></span><span class="qc-risk">TROUBLE <b>'+percent(odds.trouble)+'</b></span></span><span class="qc-name">'+q.why+'</span><span class="qc-forecast">'+prospect+'</span><span class="qc-definition">'+odds.description+'</span>';
    b.addEventListener("click",()=>{quickSelection=i;g.quickSelection=i;render();});
    container.appendChild(b);
  });
@@ -379,6 +399,6 @@ window.GolfEngine={state:()=>JSON.parse(JSON.stringify(g)),newHole:()=>{g=create
 window.addEventListener('resize',setupCanvas);render();requestAnimationFrame(setupCanvas);
 })();
 </script>
-<script src="career.js?v=4"></script>
+<script src="career.js?v=5"></script>
 </body>
 </html>
