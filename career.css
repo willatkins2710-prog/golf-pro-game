@@ -129,3 +129,18 @@
  .quick-intro{margin-bottom:8px}
  #gameApp #actionSubtitle{display:none}
 }
+
+/* Shot outcome percentages (v4) */
+.quick-choice .qc-odds{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:1px 0 2px}
+.qc-odds>span{border:1px solid #ffffff1a;border-radius:9px;padding:8px 10px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;font-size:9px;letter-spacing:.4px;font-weight:750}
+.qc-odds b{font-size:22px;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.qc-good{color:#b5eea0;background:#22533875}.qc-risk{color:#f0c99f;background:#6a482d50}
+.qc-name{font-size:12px}.qc-definition{font-size:10px;color:#9faf9c}
+.quick-choice.chosen .qc-odds>span{border-color:#a7cb9166}
+.quick-choice .qc-figures{font-size:11px}
+@media(max-width:800px){
+.quick-choice{gap:6px}
+.qc-odds>span{padding:7px 9px}
+.qc-odds b{font-size:21px}
+.qc-definition{font-size:10px}
+}
