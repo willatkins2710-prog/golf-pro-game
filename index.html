@@ -82,7 +82,8 @@ function shotVariability(selected){
  const skill=window.golfPlayerStats||{driving:60,irons:64,short:51,putting:54,mental:45};
  const rating=skillRating(selected);
  const confidence=cap(1+(60-rating)*.012,.48,1.65);
- let lateral=(selected.kind==='wood'?10:selected.kind==='iron'?7.5:4.3)*confidence;
+ let lateral=(selected.kind==='wood'?(selected.id==='driver'?26:selected.id==='3wood'?18:15):selected.kind==='iron'?7.5:4.3)*confidence;
+lateral*=1+(cfg().wind||0)/120;
  if(selected.kind==='iron'&&(window.golfEquipment?.irons||60)>60)lateral*=.95;
  if(g.power>100)lateral*=1+(g.power-100)*.025;
  if(g.quickSelection===2)lateral*=cap(1+((55-(skill.mental||45))*.012),.8,1.5);
@@ -102,8 +103,12 @@ if(g.flight==='flop')roll=1.5;
 if(g.flight==='splash')roll=1.2;
 let direction=g.ball.y>422?-1:1;let launchY=g.ball.y+direction*carry/scale(), endY=launchY+direction*roll/scale();
 let aimOffset={left:-14,centre:0,right:g.phase==='tee'&&cfg().par!==3?24:8}[g.aim]||0;
+if(g.quickSelection===0&&g.phase==='tee'&&cfg().par!==3)aimOffset=-3;
+if(g.quickSelection===2&&g.phase==='tee'&&cfg().par!==3)aimOffset=26;
 let shape={straight:0,draw:-8,fade:8}[g.shape]||0;
 let targetX=centery(endY)+aimOffset+shape+wind;
+// Caddie options compensate for the forecast crosswind. Wind still worsens dispersion.
+if(Number.isInteger(g.quickSelection)&&g.quickShotKey)targetX-=wind*.85;
 if(preview)return{carry,roll,wind,dest:{x:targetX,y:endY},after:Math.round(Math.hypot(420-endY,targetX)*scale())};
 const variability=shotVariability(selected);
 let deviation=variability.lateral;
@@ -191,11 +196,12 @@ function quickPresets(){
       option("ATTACK",5,5,"sw","splash","right",presetPower(d*1.1,"sw","splash"),"Attack the pin · overshoot risk")
      ];
    }else{
+     const pitchY=Math.max(2,Math.abs(420-g.ball.y)*scale());
      const flopClub=d>29?"sw":"lw";
      list=[
-       option("SAFE",1,2,"gw","chip","centre",presetPower(d,"gw","chip"),"Bump-and-run · reliable contact"),
-       option("BALANCED",3,3,"sw","normal","centre",presetPower(d,"sw","normal"),"Pitch and check near the hole"),
-       option("ATTACK",5,5,flopClub,"flop","centre",presetPower(d,flopClub,"flop"),"High flop · close chance, difficult strike")
+       option("SAFE",1,2,"gw","chip","centre",presetPower(pitchY,"gw","chip"),"Bump-and-run · reliable contact"),
+       option("BALANCED",3,3,"sw","normal","centre",presetPower(pitchY,"sw","normal"),"Pitch and check near the hole"),
+       option("ATTACK",5,5,flopClub,"flop","centre",presetPower(pitchY,flopClub,"flop"),"High flop · close chance, difficult strike")
      ];
    }
  }else if(tee&&!par3){
@@ -252,11 +258,11 @@ function shotOdds(q,index,estimate){
    const clubNow=club(),f=flight(),sig=shotVariability(clubNow);
    const nominal=estimate||projection(true),origin=g.ball,scaleNow=scale(),beforeDistance=toPin(),isTee=g.phase==='tee'&&cfg().par!==3;
    const short=beforeDistance<=55,layUp=beforeDistance>200&&q.title==="SAFE"&&!isTee;
-   let seed=(Math.imul(cfg().number||1,524287)^Math.imul(g.strokes+1,32452843)^Math.round(origin.x*893)^Math.round(origin.y*631)^Math.imul(index+1,9781)^Math.round(sig.rating*97))>>>0;
+   let seed=(Math.imul(cfg().number||1,524287)^Math.imul(g.strokes+1,32452843)^Math.round(origin.x*893)^Math.round(origin.y*631)^Math.imul(index+1,9781))>>>0;
    function unit(){seed=(Math.imul(seed,1664525)+1013904223)>>>0;return(seed+.5)/4294967296}
    function gaussian(){return Math.sqrt(-2*Math.log(Math.max(.000001,unit())))*Math.cos(2*Math.PI*unit())}
    let strong=0,trouble=0;
-   const runs=360;
+   const runs=1000;
    for(let k=0;k<runs;k++){
      const carry=Math.max(2,nominal.carry+gaussian()*sig.carry);
      const roll=Math.max(0,nominal.roll+(-2+unit()*6));
