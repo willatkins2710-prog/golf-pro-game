@@ -214,9 +214,9 @@ function renderCourse(v){
     outline.push({x:centery(start)-wide,y:start},{x:centery(start)+wide,y:start},{x:centery(end)+wide,y:end},{x:centery(end)-wide,y:end});
   }else{
     const dir=type==="left"?-1:1;
-    outline.push({x:centery(start)+dir*(fairWidth(start)+8),y:start},
-      {x:dir*108,y:start},{x:dir*108,y:end},
-      {x:centery(end)+dir*(fairWidth(end)+8),y:end});
+    for(let y=start;y<=end;y+=7){outline.push({x:centery(y)+dir*(fairWidth(y)+8),y})}
+    outline.push({x:centery(end)+dir*(fairWidth(end)+8),y:end});
+    outline.push({x:dir*108,y:end},{x:dir*108,y:start});
   }
   const waterGrad=ctx.createLinearGradient(px(-95,v),0,px(95,v),0);
   waterGrad.addColorStop(0,"#245b8e");waterGrad.addColorStop(1,"#5fa9c0");
