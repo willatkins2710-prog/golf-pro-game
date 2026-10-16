@@ -197,13 +197,13 @@ function renderCourse(v){
  const l=layout(),W=dims.w,H=dims.h;
  const grd=ctx.createLinearGradient(0,0,0,H);grd.addColorStop(0,"#244938");grd.addColorStop(1,"#193827");ctx.fillStyle=grd;ctx.fillRect(0,0,W,H);
  ctx.globalAlpha=.11;for(let i=-18;i<24;i++){ctx.fillStyle=i%2?"#67a575":"#102e24";ctx.beginPath();ctx.moveTo(i*36,0);ctx.lineTo(i*36+23,0);ctx.lineTo(i*36-35,H);ctx.lineTo(i*36-60,H);ctx.fill()}ctx.globalAlpha=1;
- function edgePts(extra){
-  const pts=[];for(let y=0;y<=394;y+=7){const dir=Math.sign(extra),width=fairWidth(y)+Math.abs(extra);pts.push({x:centery(y)+dir*width,y})}return pts;
+ function edgePts(side,extra){
+  const pts=[];for(let y=0;y<=394;y+=7){const width=fairWidth(y)+extra;pts.push({x:centery(y)+side*width,y})}return pts;
  }
- function strip(extra,color){const L=edgePts(-extra),R=edgePts(extra).reverse();ctx.beginPath();ctx.moveTo(px(L[0].x,v),py(L[0].y,v));[...L.slice(1),...R].forEach(p=>ctx.lineTo(px(p.x,v),py(p.y,v)));ctx.closePath();ctx.fillStyle=color;ctx.fill()}
+ function strip(extra,color){const L=edgePts(-1,extra),R=edgePts(1,extra).reverse();ctx.beginPath();ctx.moveTo(px(L[0].x,v),py(L[0].y,v));[...L.slice(1),...R].forEach(p=>ctx.lineTo(px(p.x,v),py(p.y,v)));ctx.closePath();ctx.fillStyle=color;ctx.fill()}
  // Fairway widths and dogleg curvature are actual shot geometry.
  strip(9,"#447c4d");strip(0,"#76ae69");
- ctx.save();ctx.beginPath();let L=edgePts(0),R=edgePts(0).reverse();ctx.moveTo(px(L[0].x,v),py(L[0].y,v));[...L.slice(1),...R].forEach(p=>ctx.lineTo(px(p.x,v),py(p.y,v)));ctx.closePath();ctx.clip();
+ ctx.save();ctx.beginPath();let L=edgePts(-1,0),R=edgePts(1,0).reverse();ctx.moveTo(px(L[0].x,v),py(L[0].y,v));[...L.slice(1),...R].forEach(p=>ctx.lineTo(px(p.x,v),py(p.y,v)));ctx.closePath();ctx.clip();
  ctx.globalAlpha=.06;for(let i=0;i<17;i++){ctx.fillStyle=i%2?"#fff":"#05321c";ctx.fillRect(0,i*H/17,W,H/17)}ctx.restore();
  const type=l.waterType;
  if(type!=="none"){
