@@ -313,7 +313,8 @@ function renderQuick(){
    b.className="quick-choice"+(i===quickSelection?" chosen":"");b.setAttribute("aria-pressed",i===quickSelection?"true":"false");
    const primary=g.phase==="green"?q.why:clubName+" · "+q.why;
    const prospect=g.phase==="green"?Math.round(d*3)+" ft to cup":estimate?"~"+Math.round(estimate.carry)+" yd carry · ~"+Math.round(estimate.after)+" yd left":"";
-   b.innerHTML='<span class="qc-top"><strong>'+q.title+'</strong><span class="qc-figures">'+clubName+'</span></span><span class="qc-odds"><span class="qc-good">GOOD RESULT <b>'+odds.good+'%</b></span><span class="qc-risk">TROUBLE <b>'+odds.trouble+'%</b></span></span><span class="qc-name">'+q.why+'</span><span class="qc-forecast">'+prospect+'</span><span class="qc-definition">'+odds.description+'</span>';
+   const percent=n=>n===0?'&lt;1%':n===100?'&gt;99%':n+'%';
+   b.innerHTML='<span class="qc-top"><strong>'+q.title+'</strong><span class="qc-figures">'+clubName+'</span></span><span class="qc-odds"><span class="qc-good">GOOD RESULT <b>'+percent(odds.good)+'</b></span><span class="qc-risk">TROUBLE <b>'+percent(odds.trouble)+'</b></span></span><span class="qc-name">'+q.why+'</span><span class="qc-forecast">'+prospect+'</span><span class="qc-definition">'+odds.description+'</span>';
    b.addEventListener("click",()=>{quickSelection=i;g.quickSelection=i;render();});
    container.appendChild(b);
  });
