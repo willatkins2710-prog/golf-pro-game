@@ -89,3 +89,43 @@
  #gameApp .prediction .prednum{font-size:15px}
 }
 @media(max-width:375px){.c-scoregrid{grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}#gameApp .map-wrap canvas{height:270px}#stickyShot #fixedHit{font-size:13px}}
+
+/* Skill-aware, three-option shot selection — simplified gameplay */
+#gameApp #playControls > .group,
+#gameApp #playControls > .prediction,
+#gameApp #playControls > .notice,
+#gameApp #playControls > .helper{display:none!important}
+#gameApp #playControls #quickPanel{display:block!important}
+#gameApp #playControls #quickPanel.hidden{display:none!important}
+#quickPanel{margin:0;display:block}
+.quick-intro{display:flex;justify-content:space-between;align-items:center;gap:9px;margin:0 0 10px;flex-wrap:wrap}
+.quick-intro strong{font-size:16px;letter-spacing:-.3px}
+.quick-intro span{font-size:11px;color:#b6cbb3}
+.quick-choices{display:grid;gap:7px;grid-template-columns:1fr}
+.quick-choice{width:100%;border:1px solid #486956;border-radius:13px;background:#142a1e;color:#f3f6ef;text-align:left;display:flex;flex-direction:column;gap:4px;min-height:84px;padding:10px 12px;cursor:pointer}
+.quick-choice.chosen{border:2px solid #c4f178;background:#2b4933;padding:9px 11px;box-shadow:0 0 0 1px #86b75b20}
+.quick-choice:focus-visible{outline:3px solid #f2df8e;outline-offset:1px}
+.qc-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.qc-top strong{font-size:12px;letter-spacing:.8px;color:#d8e5d0}
+.quick-choice.chosen .qc-top strong{color:#c4f178}
+.qc-figures{font-size:10px;color:#baccb7;white-space:nowrap;font-variant-numeric:tabular-nums}
+.qc-name{font-size:12px;line-height:1.35}
+.qc-forecast{font-size:11px;color:#ddf19d;font-weight:750}
+#gameApp .control-panel{padding:12px 13px}
+#gameApp .control-panel > .overline{margin-bottom:4px}
+#gameApp .control-panel #actionTitle{margin:0 0 3px}
+#gameApp .control-panel #actionSubtitle{font-size:12px;margin:0 0 11px}
+#gameApp .map-wrap canvas{max-height:320px}
+@media(max-width:800px){
+ #gameApp .map-wrap canvas{height:240px;max-height:240px}
+ #gameApp .course-head{padding:7px 11px}
+ #gameApp .course-head p.hint{display:none}
+ #gameApp .metrics{gap:5px}
+ #gameApp .metrics .metric{padding:7px 2px}
+ #gameApp .control-panel{padding:10px 11px}
+ .quick-choice{min-height:70px;padding:8px 10px;gap:3px}
+ .quick-choice.chosen{padding:7px 9px}
+ .qc-name{font-size:12px}
+ .quick-intro{margin-bottom:8px}
+ #gameApp #actionSubtitle{display:none}
+}
