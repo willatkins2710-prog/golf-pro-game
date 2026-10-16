@@ -15,7 +15,7 @@
 @media(max-width:370px){.map-wrap canvas{height:355px}.metric .v{font-size:16px}.metric .v.lie{font-size:11px}.app{padding:12px 9px 60px}.control-panel{padding:13px}.header-line{flex-direction:column}.top-pill{width:100%}}
 @media(prefers-reduced-motion:reduce){.primary{transition:none}}
 </style>
-<link rel="stylesheet" href="career.css?v=5" /></head>
+<link rel="stylesheet" href="career.css?v=6" /></head>
 <body>
 <main class="app hidden" id="gameApp">
 <header class="mast"><div class="brand"><div class="brandmark">G</div><div><span class="overline">Golf Pro · Career Simulator</span><h1>ROAD TO WORLD NO. 1</h1></div></div><button id="resetTop" class="ghost-btn" type="button">↻ Replay hole</button></header>
@@ -331,7 +331,7 @@ function shotOdds(q,index,estimate){
        if(lie==='Water hazard'||lie==='Bunker'||(lie!=='Green'&&rem>28))trouble++;
      }
    }
-   chances={good:Math.round(strong*100/runs),close:Math.round(close*100/runs),trouble:Math.round(trouble*100/runs),description:isTee?'Fairway / strong drive / rough or hazard':layUp?'Lay-up in fairway / strong advance / trouble':short?'Green / within 15 ft / poor recovery':'Green hit / within 15 ft / costly miss',firstLabel:isTee||layUp?'FAIRWAY': 'GREEN HIT',secondLabel:isTee||layUp?'STRONG DRIVE':'BIRDIE LOOK'};
+   chances={good:Math.round(strong*100/runs),close:Math.round(close*100/runs),trouble:Math.round(trouble*100/runs),description:isTee?'Fairway / strong drive / rough or hazard':layUp?'Lay-up in fairway / strong advance / trouble':short?'Green / within 15 ft / poor recovery':'Green hit / within 15 ft / costly miss',firstLabel:isTee||layUp?'FAIRWAY': 'GREEN HIT',secondLabel:isTee||layUp?'STRONG DRIVE':'CLOSE PUTT'};
  }
  Object.assign(g,before);
  return chances;
@@ -422,6 +422,6 @@ window.GolfEngine={state:()=>JSON.parse(JSON.stringify(g)),newHole:()=>{g=create
 window.addEventListener('resize',setupCanvas);render();requestAnimationFrame(setupCanvas);
 })();
 </script>
-<script src="career.js?v=5"></script>
+<script src="career.js?v=6"></script>
 </body>
 </html>
