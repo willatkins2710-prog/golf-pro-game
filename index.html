@@ -88,15 +88,38 @@ lateral*=1+(cfg().wind||0)/120;
  if(g.power>100)lateral*=1+(g.power-100)*.025;
  if(g.quickSelection===2)lateral*=cap(1+((55-(skill.mental||45))*.012),.8,1.5);
  if(g.quickShotKey && (g.phase==='approach'||g.phase==='tee'&&cfg().par===3)&&toPin()<=220&&toPin()>55){
-  lateral*=g.quickSelection===0?.84:g.quickSelection===2?1.75:1;
+  lateral*=g.quickSelection===0?.70:g.quickSelection===2?1.05:1;
  }
  if(g.flight==='punch')lateral*=.78;
  if(g.flight==='flop')lateral*=1.3;
  if(g.lie==='Rough'||g.lie==='Bunker'||g.lie==='Long rough')lateral*=1.45;
  let carry=(selected.kind==='wood'?11:selected.kind==='iron'?7:4)*(.75+g.power/240)*cap(1+(60-rating)*.009,.62,1.42);
- if(g.quickShotKey && (g.phase==='approach'||g.phase==='tee'&&cfg().par===3)&&toPin()<=220&&toPin()>55){carry*=g.quickSelection===0?.85:g.quickSelection===2?1.55:1;}
+ if(g.quickShotKey && (g.phase==='approach'||g.phase==='tee'&&cfg().par===3)&&toPin()<=220&&toPin()>55){carry*=g.quickSelection===0?.80:g.quickSelection===2?1.05:1;}
 
  return{lateral,carry,rating};
+}
+function isAttackingApproach(){
+ return g.quickShotKey&&g.quickSelection===2&&
+   (g.phase==="approach"||(g.phase==="tee"&&cfg().par===3))&&toPin()>55&&toPin()<=220;
+}
+function badStrikeChance(selected){
+ const skill=window.golfPlayerStats||{irons:64,mental:45};
+ const rating=skillRating(selected);
+ return cap(.23-(rating-64)*.0048+(55-(skill.mental||45))*.0018+(cfg().wind-10)*.002,.05,.38);
+}
+function sampleStrike(selected,gaussian,uniform){
+ const sig=shotVariability(selected);
+ if(isAttackingApproach()){
+  if(uniform()<badStrikeChance(selected)){
+   const long=uniform()>.55;
+   return{
+     carryError:gaussian()*sig.carry*1.7+(long?21:-28),
+     lateralError:gaussian()*sig.lateral*2.1+(uniform()>.5?33:-33)
+   };
+  }
+  return{carryError:gaussian()*sig.carry*.68,lateralError:gaussian()*sig.lateral*.68};
+ }
+ return{carryError:gaussian()*sig.carry,lateralError:gaussian()*sig.lateral};
 }
 function projection(preview=false){let selected=club(),f=flight();if(g.phase==='green')return{carry:0,roll:0,wind:0,dest:{x:0,y:420},after:0};
 let lieMod=g.lie==='Rough'?.89:g.lie==='Bunker'?.72:g.lie==='Greenside rough'?.86:g.lie==='Long rough'?.77:1;
@@ -114,18 +137,17 @@ let shape={straight:0,draw:-8,fade:8}[g.shape]||0;
 let targetX=centery(endY)+aimOffset+shape+wind;
 if(g.quickShotKey && Number.isInteger(g.quickSelection) && (g.phase==='approach'||g.phase==='tee'&&cfg().par===3) && toPin()>55 && toPin()<=220){
   // Safe = front of green, balanced = broad centre, attack = exact flag.
-  const targets=[{x:-11,y:408},{x:-9,y:414},{x:0,y:420}];
+  const targets=[{x:-12,y:415},{x:-7,y:416},{x:0,y:420}];
   const t=targets[g.quickSelection];
-  targetX=centery(t.y)+t.x+wind*.15;
+  targetX=t.x+wind*.15;
 }
 // Caddie options compensate for the forecast crosswind. Wind still worsens dispersion.
 if(Number.isInteger(g.quickSelection)&&g.quickShotKey && !((g.phase==='approach'||g.phase==='tee'&&cfg().par===3)&&toPin()>55&&toPin()<=220))targetX-=wind*.85;
 if(preview)return{carry,roll,wind,dest:{x:targetX,y:endY},after:Math.round(Math.hypot(420-endY,targetX)*scale())};
-const variability=shotVariability(selected);
-let deviation=variability.lateral;
-let actualCarry=Math.max(2,carry+normal()*variability.carry);
+const error=sampleStrike(selected,normal,Math.random);
+let actualCarry=Math.max(2,carry+error.carryError);
 let actualRoll=Math.max(0,roll+rnd(-2,4));
-let newX=targetX+normal()*deviation;
+let newX=targetX+error.lateralError;
 let actualY=cap(g.ball.y+direction*(actualCarry+actualRoll)/scale(),-3,463);
 return{carry:actualCarry,roll:actualRoll,wind,dest:{x:newX,y:actualY},after:Math.round(Math.hypot(420-actualY,newX)*scale())};
 }
@@ -223,10 +245,10 @@ function quickPresets(){
    ];
  }else if(par3){
    const travel=y=>Math.max(1,Math.abs(y-g.ball.y)*scale());
-   const safe=selectNearest(travel(408)-6),middle=selectNearest(travel(414)-5),attacker=selectNearest(travel(420)-2);
+   const safe=selectNearest(travel(415)-6),middle=selectNearest(travel(416)-5),attacker=selectNearest(travel(420)-2);
    list=[
-    option("SAFE",1,2,safe.id,"normal","left",presetPower(travel(408)-6,safe.id,"normal"),"Aim safely for the front-left"),
-    option("BALANCED",3,3,middle.id,"normal","centre",presetPower(travel(414)-5,middle.id,"normal"),"Find the green and make par"),
+    option("SAFE",1,2,safe.id,"normal","left",presetPower(travel(415)-6,safe.id,"normal"),"Play safely for the broad part of the green"),
+    option("BALANCED",3,3,middle.id,"normal","centre",presetPower(travel(416)-5,middle.id,"normal"),"Aim towards the flag without forcing it"),
     option("ATTACK",5,5,attacker.id,"high","right",presetPower(travel(420)-2,attacker.id,"high"),"Fire at the flag · bigger birdie chance")
    ];
  }else{
@@ -235,8 +257,8 @@ function quickPresets(){
    if(goingForGreen){
      const safe=selectNearest(travel(408)-6),middle=selectNearest(travel(414)-5),attacker=selectNearest(travel(420)-2);
      list=[
-      option("SAFE",1,2,safe.id,"normal","left",presetPower(travel(408)-6,safe.id,"normal"),"Play for the safe part of the green"),
-      option("BALANCED",3,3,middle.id,"normal","centre",presetPower(travel(414)-5,middle.id,"normal"),"Aim for a comfortable two-putt"),
+      option("SAFE",1,2,safe.id,"normal","left",presetPower(travel(415)-6,safe.id,"normal"),"Play safely for the heart of the green"),
+      option("BALANCED",3,3,middle.id,"normal","centre",presetPower(travel(416)-5,middle.id,"normal"),"Aim closer to the flag"),
       option("ATTACK",5,5,attacker.id,"high","right",presetPower(travel(420)-2,attacker.id,"high"),"Attack the flag for a close birdie putt")
      ];
    }else{
@@ -287,10 +309,11 @@ function shotOdds(q,index,estimate){
    let strong=0,close=0,trouble=0;
    const runs=1000;
    for(let k=0;k<runs;k++){
-     const carry=Math.max(2,nominal.carry+gaussian()*sig.carry);
+     const error=sampleStrike(clubNow,gaussian,unit);
+     const carry=Math.max(2,nominal.carry+error.carryError);
      const roll=Math.max(0,nominal.roll+(-2+unit()*6));
      const direction=origin.y>422?-1:1;
-     const x=nominal.dest.x+gaussian()*sig.lateral;
+     const x=nominal.dest.x+error.lateralError;
      const y=cap(origin.y+direction*(carry+roll)/scaleNow,-3,463);
      const lie=lieAt(x,y),rem=Math.hypot(420-y,x)*scaleNow;
      if(isTee||layUp){
