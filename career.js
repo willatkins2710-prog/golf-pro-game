@@ -13,6 +13,8 @@ function blank(){return{bank:3000,earnings:4790,level:3,xp:720,skillPoints:0,att
 let career=blank();
 try{let v=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");if(v&&v.attributes&&v.tournament){career={...blank(),...v,settings:{...blank().settings,...v.settings}}}}catch(e){}
 window.golfFastAnimations=!!career.settings.fast;
+function syncGolfer(){window.golfPlayerStats={...career.attributes};window.golfEquipment={...career.equipment}}
+syncGolfer();
 let tab="home",lastPage="home",modal=null,animatingShot=false;
 const money=n=>"£"+Number(n||0).toLocaleString("en-GB");
 const scoreText=n=>n===0?"E":n>0?"+"+n:String(n);
@@ -76,7 +78,7 @@ function scorecardHtml(scores,headline){let total=scoreTotal(scores);let h='<h2>
 for(let i=0;i<18;i++){let v=scores[i];h+='<div class="c-hscore'+(getCurrent()&&getCurrent().current===i?" current":"")+'"><small>'+(i+1)+' · Par '+course[i].par+'</small><b class="'+(v?(v.type==="played"?"play":"sim"):"empty")+'">'+(v?v.score:"—")+'</b><small>'+(v?(v.type==="played"?"Played":"Sim"):"Pending")+'</small></div>'}
 h+='</div>'+row("Holes completed",total.holes+"/18")+row("Total strokes",total.strokes)+row("To par",scoreText(total.relative));return h;
 }
-function renderCareer(){const root=byId("careerShell");let names=[["home","Career"],["schedule","Schedule"],["player","My Golfer"],["equipment","Equipment"],["settings","Settings"]];
+function renderCareer(){syncGolfer();const root=byId("careerShell");let names=[["home","Career"],["schedule","Schedule"],["player","My Golfer"],["equipment","Equipment"],["settings","Settings"]];
 let h='<header class="site-nav"><div class="site-title"><span>GOLF PRO</span>ROAD TO WORLD NO. 1</div><span class="c-pill">LEVEL '+career.level+'</span></header>';
 h+='<div class="nav-tabs">'+names.map(q=>'<button data-tab="'+q[0]+'" class="'+(q[0]===tab?"active":"")+'">'+q[1]+'</button>').join("")+'</div>';
 h+=tab==="home"?home():tab==="schedule"?season():tab==="player"?player():tab==="equipment"?equipment():settings();
@@ -85,7 +87,7 @@ root.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{t
 root.querySelectorAll("[data-action]").forEach(b=>b.addEventListener("click",()=>act(b.dataset.action)));
 }
 function showHome(page="home"){tab=page;byId("careerShell").classList.remove("hidden");byId("gameApp").classList.add("hidden");byId("stickyShot").classList.remove("visible");renderCareer();window.scrollTo(0,0)}
-function showRound(){if(!career.session)return showHome();byId("careerShell").classList.add("hidden");byId("gameApp").classList.remove("hidden");byId("stickyShot").classList.add("visible");const s=career.session;const snapshot=s.engineState?JSON.parse(JSON.stringify(s.engineState)):null;updateCourse(s.current);if(snapshot&&s.scores[s.current]===null)engine.restore(snapshot);else if(s.scores[s.current]===null&&engine.state().phase==="complete")engine.newHole();engine.resize();renderGameBar();window.scrollTo(0,0)}
+function showRound(){syncGolfer();if(!career.session)return showHome();byId("careerShell").classList.add("hidden");byId("gameApp").classList.remove("hidden");byId("stickyShot").classList.add("visible");const s=career.session;const snapshot=s.engineState?JSON.parse(JSON.stringify(s.engineState)):null;updateCourse(s.current);if(snapshot&&s.scores[s.current]===null)engine.restore(snapshot);else if(s.scores[s.current]===null&&engine.state().phase==="complete")engine.newHole();engine.resize();renderGameBar();window.scrollTo(0,0)}
 function updateCourse(index){const h=course[index];window.golfConfig={...h};engine.configure(window.golfConfig);
 byId("roundHoleInfo").textContent="Hole "+h.number+" / 18 · "+h.name+" · Par "+h.par+" · "+h.yards+" yd";
 byId("actionTitle").textContent="Plan your next shot";
