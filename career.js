@@ -1,7 +1,7 @@
 (()=>{"use strict";
 const SAVE_KEY="golfpro_career_18hole_v1";
 const engine=window.GolfEngine;
-const course=[
+const baseCourse=[
  [4,420,"The Opening",10,-10,1],[5,528,"Long Reach",7,7,0],[3,166,"Heather Bank",13,-13,0],
  [4,398,"Old Quarry",6,6,0],[4,447,"Stone Wall",12,-12,1],[3,185,"Valley Short",4,4,0],
  [5,557,"The Long Mile",9,-9,1],[4,374,"Birch Corner",8,8,0],[4,433,"Homeward",11,-11,1],
@@ -9,9 +9,32 @@ const course=[
  [4,445,"Red Barn",10,10,1],[4,386,"The Orchard",6,-6,0],[3,199,"Island Approach",14,-14,1],
  [5,548,"Last Chance",7,7,0],[4,429,"Pennine Ridge",11,11,1],[4,421,"Clubhouse",10,-10,1]
 ].map((x,i)=>({number:i+1,par:x[0],yards:x[1],name:x[2],wind:x[3],windX:x[4],windY:i%4===0?-3:i%4===2?3:0,water:!!x[5]}));
-function blank(){return{bank:3000,earnings:4790,level:3,xp:720,skillPoints:0,attributes:{driving:60,irons:64,short:51,putting:54,mental:45,fitness:65},sponsor:{status:"pending",brand:"Mizuno"},equipment:{irons:60},tournament:{status:"not_started",entryPaid:false,rounds:[],position:null,prize:0},session:null,history:[],settings:{fast:false}}}
+
+const events=[
+ {name:"Northern Masters",venue:"Wharfedale Park",week:5,purse:20000,fee:175},
+ {name:"Pennine Invitational",venue:"Ribble Moor",week:6,purse:24000,fee:185},
+ {name:"Lakes Classic",venue:"Windermere Vale",week:7,purse:26500,fee:195},
+ {name:"Yorkshire Championship",venue:"White Rose Links",week:8,purse:32000,fee:210},
+ {name:"Dales Open",venue:"Dales Ridge",week:9,purse:35000,fee:225},
+ {name:"English Mini Tour Final",venue:"Hartwell Heath",week:10,purse:50000,fee:250}
+];
+function activeEvent(){return events[Math.min(Math.max(0,career.eventIndex||0),events.length-1)]}
+function makeCourse(eventIndex){
+ const shapes=["sweep-left","dogleg-right","straight","s-bend","dogleg-left","sweep-right","straight","dogleg-left","s-bend","sweep-left","dogleg-right","straight","dogleg-left","sweep-right","straight","dogleg-right","s-bend","sweep-left"];
+ const waters=["none","right","none","left","none","none","cross","none","right","none","left","none","right","none","front","none","left","right"];
+ return baseCourse.map((h,i)=>{
+   const v=(i+eventIndex*5)%18,shape=shapes[v];
+   const bend=shape==="dogleg-left"?-53:shape==="dogleg-right"?52:shape==="sweep-left"?-29:shape==="sweep-right"?28:shape==="s-bend"?(i%2?37:-38):0;
+   const waterType=waters[(i+eventIndex*3)%18],yards=Math.max(135,h.yards+(eventIndex===0?0:(((i*7+eventIndex*11)%7)-3)*5));
+   return {...h,yards,shape,bend,waterType,water:waterType!=="none",fairwayWidth:[31,27,35,24,32,29,30,26,33][(v+eventIndex)%9],bunkerPattern:(v+eventIndex)%5,greenWidth:[24,29,22,27][(i+eventIndex)%4],greenDepth:[17,15,20,18][(v+eventIndex)%4]};
+ });
+}
+function blank(){return{bank:3000,earnings:4790,level:3,xp:720,skillPoints:0,attributes:{driving:60,irons:64,short:51,putting:54,mental:45,fitness:65},sponsor:{status:"pending",brand:"Mizuno"},equipment:{irons:60},tournament:{status:"not_started",entryPaid:false,rounds:[],position:null,prize:0},session:null,history:[],eventIndex:0,eventResults:[],settings:{fast:false}}}
 let career=blank();
 try{let v=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");if(v&&v.attributes&&v.tournament){career={...blank(),...v,settings:{...blank().settings,...v.settings}}}}catch(e){}
+career.eventIndex=Number.isInteger(career.eventIndex)?career.eventIndex:0;
+career.eventResults=Array.isArray(career.eventResults)?career.eventResults:[];
+let course=makeCourse(career.session?.eventIndex??career.eventIndex);
 window.golfFastAnimations=!!career.settings.fast;
 function syncGolfer(){window.golfPlayerStats={...career.attributes};window.golfEquipment={...career.equipment}}
 syncGolfer();
@@ -25,28 +48,43 @@ const parTotal=course.reduce((a,h)=>a+h.par,0);
 function scoreTotal(scores,upto=18){let par=0,strokes=0,holes=0;for(let i=0;i<Math.min(upto,18);i++){if(scores[i]){strokes+=scores[i].score;par+=course[i].par;holes++}}return{strokes,par,relative:strokes-par,holes}}
 function getCurrent(){return career.session}
 function statusSponsor(){return career.sponsor.status==="active"?"Mizuno · Active":career.sponsor.status==="pending"?"Mizuno · Offer pending":career.sponsor.status==="rejected"?"No sponsor · Offer rejected":"No sponsor · Offer withdrawn"}
-function currentRoundText(){const s=getCurrent();return s?(s.mode==="practice"?"Practice Round":"Northern Masters · R"+s.roundNumber):"No round underway"}
+function currentRoundText(){const s=getCurrent();return s?(s.mode==="practice"?"Practice Round":(s.eventName||activeEvent().name)+" · Final Round"):"No round underway"}
 function stat(label,val){return '<div class="c-stat"><strong>'+val+'</strong><small>'+label+'</small></div>'}
 function row(label,value){return '<div class="c-row"><span>'+label+'</span><strong>'+value+'</strong></div>'}
 function btn(label,action,type=""){return '<button class="c-button '+type+'" data-action="'+action+'" type="button">'+label+'</button>'}
 function cardHeader(title,desc){return '<div class="c-panel"><h2>'+title+'</h2><p>'+desc+'</p>'}
-function home(){let s=getCurrent(),t=career.tournament;let h='<div class="c-hero"><div class="c-tag">SEASON 1 · WEEK 5 · MINI TOUR</div><h1>Road to World No. 1</h1><div class="sub">Your professional golf career starts here. Develop your golfer, choose your schedule and work your way up the tours.</div><div class="c-grid">'+stat("Bank",money(career.bank))+stat("Career earnings",money(career.earnings))+stat("Level",String(career.level))+'</div></div>';
-if(s){let total=scoreTotal(s.scores);h+=cardHeader("Your round is in progress",currentRoundText()+" · Hole "+(s.current+1)+"/18 · "+total.holes+" completed · "+scoreText(total.relative)+" vs par")+btn("▶ Resume Round","resume")+'</div>'}
-else{h+=cardHeader("Next event · Northern Masters","Mini Tour · "+money(20000)+" prize purse · "+money(175)+" entry fee · 72-hole tournament")+btn(t.status==="not_started"?"Enter Tournament · £175":t.status==="playing"?"Play Tournament · Round "+(t.rounds.length+1):t.status==="completed"?"Tournament Completed":"Missed Cut · Tournament Finished", "tournament",t.status==="completed"||t.status==="cut"?"secondary":"")+'</div>';h+=cardHeader("Play without career risk","18-hole practice round. Scores and skips don't affect your earnings, XP or tournament entry.")+btn("Play 18-Hole Practice Round","practice","secondary")+'</div>';}
-h+=cardHeader("Career overview","Your progress is saved in this browser.")+row("Previous finish","Yorkshire Open · T6 (−8)")+row("XP",career.xp+" / 1,000")+row("Skill points",career.skillPoints)+row("Equipment sponsor",statusSponsor())+'</div>';
-if(career.lastRound){let r=career.lastRound;h+=cardHeader("Last completed round",(r.mode==="practice"?"Practice":"Northern Masters R"+r.roundNumber)+" · "+r.score+" strokes · "+scoreText(r.relative)+" to par")+'<p>'+r.played+' holes played · '+r.simulated+' simulated</p>'+btn("View last scorecard","lastscore","secondary")+'</div>'}
-return h;
+function home(){
+ const e=activeEvent(),t=career.tournament,s=getCurrent();
+ let h='<div class="c-hero"><div class="c-tag">SEASON 1 · WEEK '+e.week+' · MINI TOUR</div><h1>Road to World No. 1</h1><div class="sub">One 18-hole round per tournament. Move up the tour by winning events and developing your golfer.</div><div class="c-grid">'+stat("Bank",money(career.bank))+stat("Career earnings",money(career.earnings))+stat("Level",String(career.level))+'</div></div>';
+ if(s){const total=scoreTotal(s.scores);h+=cardHeader("Round in progress",currentRoundText()+" · Hole "+(s.current+1)+"/18 · "+total.holes+" completed · "+scoreText(total.relative)+" vs par")+btn("▶ Resume Round","resume")+'</div>'}
+ else{
+  if(t.status==="not_started"||t.status==="playing"){
+    h+=cardHeader("Next event · "+e.name,e.venue+" · "+money(e.purse)+" purse · "+money(e.fee)+" entry fee · ONE 18-hole round")+
+      (t.status==="playing"&&t.rounds.length?btn("Finish existing saved round","legacyFinish"):btn(t.entryPaid?"Play "+e.name:"Enter Tournament · "+money(e.fee),"tournament"))+'</div>';
+  }else if(career.eventIndex<events.length-1){
+    h+=cardHeader(e.name+" · Finished",t.position?"P"+t.position+" · "+money(t.prize)+" earned":"Tournament finished")+btn("Continue to "+events[career.eventIndex+1].name,"nextEvent")+'</div>';
+  }else{
+    h+=cardHeader("Mini Tour season complete","You finished all six 18-hole events.")+btn("View Season Results","schedule","secondary")+'</div>';
+  }
+  h+=cardHeader("Play without career risk","18-hole practice round. Scores and skips do not affect earnings, XP or tournament entry.")+btn("Play 18-Hole Practice Round","practice","secondary")+'</div>';
+ }
+ h+=cardHeader("Career overview","Your progress is saved in this browser.")+row("Previous finish","Yorkshire Open · T6 (−8)")+row("XP",career.xp+" / 1,000")+row("Skill points",career.skillPoints)+row("Equipment sponsor",statusSponsor())+'</div>';
+ if(career.lastRound){const last=career.lastRound;h+=cardHeader("Last completed round",(last.mode==="practice"?"Practice":last.eventName||e.name)+" · "+last.score+" strokes · "+scoreText(last.relative)+" to par")+'<p>'+last.played+' holes played · '+last.simulated+' simulated</p>'+btn("View last scorecard","lastscore","secondary")+'</div>'}
+ return h;
 }
-function season(){let t=career.tournament;let h=cardHeader("Season calendar","Advance your career by entering events. The Northern Masters is the next available tour event.");
-h+=row("Week 4","Yorkshire Open · T6 · £540");
-h+=row("Week 5","Northern Masters · "+money(20000)+" purse");
-h+=row("Tournament status",t.status.replace("_"," "));
-h+=row("Entry fee","£175"+(t.entryPaid?" · paid":" · not yet paid"));
-h+=row("Rounds completed",t.rounds.length+" / 4");
-for(let j=0;j<t.rounds.length;j++){let sc=scoreTotal(t.rounds[j]);h+=row("Round "+(j+1),sc.strokes+" ("+scoreText(sc.relative)+")")}
-if(t.status==="completed")h+=row("Final result","P"+t.position+" · "+money(t.prize));
-h+='</div>'+cardHeader("How tour progression works","Tournament finishes earn cash, XP and reputation. Your actual shot choices determine played-hole scores. Skipped holes are simulated using your ability and course difficulty.")+'</div>';
-return h;
+function season(){
+ const active=activeEvent(),t=career.tournament;
+ let h=cardHeader("Mini Tour calendar","Six fictional, one-round 18-hole tournaments. Prize money and XP are awarded at the end of each event.");
+ h+=row("Previous finish","Yorkshire Open · T6 · £540");
+ for(let i=0;i<events.length;i++){
+  const e=events[i],done=career.eventResults.find(r=>r.eventIndex===i);
+  const status=done?" · P"+done.position+" · "+money(done.prize):i===career.eventIndex?" · Current":i<career.eventIndex?" · Finished":" · Upcoming";
+  h+=row("Week "+e.week+" · "+e.name,money(e.purse)+status);
+ }
+ h+=row("Current event",active.name)+row("Entry fee",t.entryPaid?"Paid":"Not paid")+row("Format","One 18-hole round");
+ if(t.status==="completed")h+=row("Final result","P"+t.position+" · "+money(t.prize));
+ h+='</div>'+cardHeader("Tour progression","All tournaments finish after 18 holes. Your played and simulated holes count toward the same score. There is no second round or cut.")+'</div>';
+ return h;
 }
 function player(){let h=cardHeader("Golfer attributes","Training from the Yorkshire Open has been applied. Each rating is out of 100.");
 const skills=[["Driving","driving"],["Iron Play","irons"],["Short Game","short"],["Putting","putting"],["Mental Game","mental"],["Fitness","fitness"]];
@@ -91,14 +129,14 @@ function showRound(){syncGolfer();if(!career.session)return showHome();byId("car
 function updateCourse(index){const h=course[index];window.golfConfig={...h};engine.configure(window.golfConfig);
 byId("roundHoleInfo").textContent="Hole "+h.number+" / 18 · "+h.name+" · Par "+h.par+" · "+h.yards+" yd";
 byId("actionTitle").textContent="Plan your next shot";
-const head=document.querySelector("#gameApp .header-line");if(head){head.querySelector("h2").textContent="Northern Masters · "+h.name;head.querySelector("p.hint").textContent="Hole "+h.number+" · Par "+h.par+" · "+h.yards+" yards · Firm fairways";head.querySelector(".badge").textContent=career.session?.mode==="practice"?"● PRACTICE ROUND":"● TOURNAMENT ROUND";}
+const head=document.querySelector("#gameApp .header-line");if(head){head.querySelector("h2").textContent=activeEvent().name+" · "+h.name;head.querySelector("p.hint").textContent="Hole "+h.number+" · Par "+h.par+" · "+h.yards+" yards · Firm fairways";head.querySelector(".badge").textContent=career.session?.mode==="practice"?"● PRACTICE ROUND":"● TOURNAMENT ROUND";}
 document.querySelector("#gameApp .course-head .overline").textContent="HOLE "+String(index+1).padStart(2,"0")+" / 18";
 document.querySelector("#gameApp .course-head h3").textContent=h.name+" · Par "+h.par+" · "+h.yards+" yd";
 document.querySelector("#gameApp .wind-icon").textContent=h.windX<0?"←":"→";
 document.querySelector("#gameApp .wind strong").textContent=h.wind+" mph";
 document.querySelector("#gameApp .wind small").textContent=h.windX<0?"RIGHT → LEFT":"LEFT → RIGHT";
 }
-function renderGameBar(){const s=getCurrent();if(!s)return;const total=scoreTotal(s.scores);byId("roundTitle").textContent=s.mode==="practice"?"18-Hole Practice":"Northern Masters · Round "+s.roundNumber;
+function renderGameBar(){const s=getCurrent();if(!s)return;const total=scoreTotal(s.scores);byId("roundTitle").textContent=s.mode==="practice"?"18-Hole Practice":(s.eventName||activeEvent().name)+" · 18 Holes";
 byId("roundHoleInfo").textContent="Hole "+(s.current+1)+" / 18 · "+course[s.current].name+" · Par "+course[s.current].par+" · "+course[s.current].yards+" yd";
 byId("roundScore").textContent=scoreText(total.relative);
 const state=engine.state(),completed=!!s.scores[s.current];
@@ -106,7 +144,7 @@ byId("fixedHit").textContent=completed?(s.current===17?"Finish Round →":"Next 
 byId("fixedHit").disabled=engine.isAnimating()||animatingShot;
 byId("fixedSkip").textContent="Skip ▾";
 }
-function newSession(mode,roundNumber){career.session={mode,roundNumber,current:0,scores:Array(18).fill(null),engineState:null,startedAt:new Date().toISOString()};save();engine.newHole();showRound()}
+function newSession(mode,roundNumber){const e=activeEvent();career.session={mode,roundNumber:1,eventIndex:career.eventIndex,eventName:e.name,current:0,scores:Array(18).fill(null),engineState:null,startedAt:new Date().toISOString()};save();engine.newHole();showRound()}
 function simulateHole(h){const r=Math.random(),skill=(career.attributes.irons+career.attributes.putting+career.attributes.short)/3;let rel=r<.008&&h.par>=4?-2:r<.17+skill/3000?-1:r<.57?0:r<.83?1:r<.965?2:3;return Math.max(1,h.par+rel)}
 function completeHole(){let s=getCurrent();if(!s||s.scores[s.current])return;let state=engine.state();if(state.phase!=="complete")return;s.scores[s.current]={score:state.strokes,type:"played",penalties:state.penalties};s.engineState=null;save();renderGameBar()}
 function nextHole(){let s=getCurrent();if(!s)return;let next=s.scores.findIndex(x=>x===null);if(next===-1)return concludeRound();
@@ -114,7 +152,7 @@ s.current=next;s.engineState=null;save();engine.newHole();updateCourse(s.current
 function skip(n){let s=getCurrent();if(!s||engine.isAnimating())return;let current=s.scores[s.current]===null?s.current:s.current+1;
 let count=0;for(let i=current;i<18&&count<n;i++){if(!s.scores[i]){s.scores[i]={score:simulateHole(course[i]),type:"simulated",penalties:0};count++}}
 s.engineState=null;save();closeDialog();nextHole()}
-function tournamentPrize(position){if(position===1)return 4000;if(position===2)return 2550;if(position===3)return 1800;if(position<=5)return 1250;if(position<=10)return 800;if(position<=15)return 525;if(position<=20)return 330;if(position<=30)return 180;if(position<=45)return 95;return 0}
+function tournamentPrize(position,purse=20000){const base=position===1?4000:position===2?2550:position===3?1800:position<=5?1250:position<=10?800:position<=15?525:position<=20?330:position<=30?180:position<=45?95:0;return Math.round(base*purse/20000)}
 function awardXP(n){career.xp+=n;while(career.xp>=1000){career.xp-=1000;career.level++;career.skillPoints+=2}}
 function normalRandom(){return Math.sqrt(-2*Math.log(1-Math.random()))*Math.cos(2*Math.PI*Math.random())}
 function concludeRound(){let s=getCurrent();if(!s)return;let total=scoreTotal(s.scores);if(total.holes!==18)return;
