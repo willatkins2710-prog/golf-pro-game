@@ -91,6 +91,7 @@ const relevant=selected.kind==='wood'?playerSkill.driving:selected.kind==='iron'
 deviation*=cap(1+(60-relevant)*.008,.7,1.3);
 if(selected.kind==='iron'&&(window.golfEquipment?.irons||60)>60)deviation*=.965;
 if(g.power>100)deviation*=1+(g.power-100)*.025;
+if(g.quickSelection===2)deviation*=cap(1+((55-(playerSkill.mental||45))*.012),.8,1.5);
 if(g.flight==='punch')deviation*=.78;
 if(g.flight==='flop')deviation*=1.3;
 if(g.lie==='Rough'||g.lie==='Bunker'||g.lie==='Long rough')deviation*=1.45;
