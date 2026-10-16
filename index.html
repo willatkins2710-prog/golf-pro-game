@@ -15,7 +15,7 @@
 @media(max-width:370px){.map-wrap canvas{height:355px}.metric .v{font-size:16px}.metric .v.lie{font-size:11px}.app{padding:12px 9px 60px}.control-panel{padding:13px}.header-line{flex-direction:column}.top-pill{width:100%}}
 @media(prefers-reduced-motion:reduce){.primary{transition:none}}
 </style>
-<link rel="stylesheet" href="career.css?v=2" /></head>
+<link rel="stylesheet" href="career.css?v=3" /></head>
 <body>
 <main class="app hidden" id="gameApp">
 <header class="mast"><div class="brand"><div class="brandmark">G</div><div><span class="overline">Golf Pro · Career Simulator</span><h1>ROAD TO WORLD NO. 1</h1></div></div><button id="resetTop" class="ghost-btn" type="button">↻ Replay hole</button></header>
@@ -25,7 +25,7 @@
 <div class="map-wrap"><canvas id="course" aria-label="Top-down golf hole with animated ball shots"></canvas><div class="map-label" id="viewLabel">FULL HOLE</div><div class="zoom-label" id="zoomLabel">WIND ←</div><div class="shot-toast" id="flightToast" aria-live="polite">BALL IN FLIGHT</div></div>
 <div class="metrics"><div class="metric"><div class="v" id="strokeNum">0</div><div class="k">STROKES</div></div><div class="metric highlight"><div class="v" id="pinNum">420 yd</div><div class="k" id="pinLabel">TO PIN</div></div><div class="metric"><div class="v" id="frontNum">403 yd</div><div class="k">TO FRONT</div></div><div class="metric"><div class="v lie" id="lieNum">Tee</div><div class="k">LIE</div></div></div><div class="course-footer"><span id="backText">Green: front 403 yd · centre 420 yd · back 436 yd</span><span id="shotStatus" class="pointer">Choose a shot →</span></div></section>
 <div><section class="panel control-panel" aria-label="Shot controls"><div class="step"><small id="stepLabel">Shot 1 · On the tee</small><span class="badge" id="scoreBadge">EVEN PAR</span></div><h3 id="actionTitle">Plan your tee shot</h3><p class="hint" id="actionSubtitle">Pick the club, flight, shape and landing target. Every choice affects the shot.</p>
-<div id="playControls"><div class="group"><div class="grouphead"><strong>1. Select club</strong><em>Stock carry at 100%</em></div><div id="clubTrack" class="club-choices" role="group" aria-label="Golf club selection"></div></div>
+<div id="playControls"><section id="quickPanel" aria-label="Choose from three suggested shots"><div class="quick-intro"><strong>Choose your shot</strong><span id="quickAdvice">Three options based on your ability</span></div><div id="quickChoices" class="quick-choices" role="group" aria-label="Shot options"></div></section><div class="group"><div class="grouphead"><strong>1. Select club</strong><em>Stock carry at 100%</em></div><div id="clubTrack" class="club-choices" role="group" aria-label="Golf club selection"></div></div>
 <div class="group"><div class="grouphead"><strong>2. Shot flight</strong><em>Wind &amp; roll change by flight</em></div><div id="flightChoices" class="choices" role="group" aria-label="Shot flight"></div></div>
 <div class="group" id="shapeGroup"><div class="grouphead"><strong>3. Shot shape</strong><em>Influences landing direction</em></div><div id="shapeChoices" class="choices" role="group" aria-label="Shot shape"></div></div>
 <div class="group"><div class="grouphead"><strong id="aimHeading">4. Aim point</strong><em>Marker shown on course</em></div><div id="aimChoices" class="choices" role="group" aria-label="Aim point"></div></div>
@@ -86,6 +86,11 @@ let shape={straight:0,draw:-8,fade:8}[g.shape]||0;
 let targetX=centery(endY)+aimOffset+shape+wind;
 if(preview)return{carry,roll,wind,dest:{x:targetX,y:endY},after:Math.round(Math.hypot(420-endY,targetX)*scale())};
 let deviation=selected.kind==='wood'?10:selected.kind==='iron'?7.5:4.3;
+const playerSkill=window.golfPlayerStats||{driving:60,irons:64,short:51,putting:54,mental:45};
+const relevant=selected.kind==='wood'?playerSkill.driving:selected.kind==='iron'?playerSkill.irons:playerSkill.short;
+deviation*=cap(1+(60-relevant)*.008,.7,1.3);
+if(selected.kind==='iron'&&(window.golfEquipment?.irons||60)>60)deviation*=.965;
+if(g.power>100)deviation*=1+(g.power-100)*.025;
 if(g.flight==='punch')deviation*=.78;
 if(g.flight==='flop')deviation*=1.3;
 if(g.lie==='Rough'||g.lie==='Bunker'||g.lie==='Long rough')deviation*=1.45;
@@ -140,6 +145,105 @@ function recommendedClub(){let d=toPin();let options=validClubs();return options
 function buttonGroup(target,items,current,update){el(target).innerHTML='';for(const item of items){const b=document.createElement('button');b.type='button';b.className='chip'+(item.id===current?' active':'');b.textContent=item.label;b.setAttribute('aria-pressed',item.id===current?'true':'false');b.addEventListener('click',()=>{update(item.id);save();render()});el(target).appendChild(b)}}
 function makeClubs(){const track=el('clubTrack');track.innerHTML='';for(const c of validClubs()){const b=document.createElement('button');b.type='button';b.className='club'+(g.club===c.id?' active':'');b.innerHTML=`<strong>${c.label}</strong><span>${g.phase==='green'?'On the green':c.carry+' yd carry'}</span>`;b.setAttribute('aria-pressed',g.club===c.id?'true':'false');b.addEventListener('click',()=>{g.club=c.id;save();render();});track.appendChild(b);}let selected=track.querySelector('.active');if(selected){const preferred=selected.offsetLeft-track.offsetLeft-track.clientWidth/2+selected.clientWidth/2;track.scrollLeft=Math.max(0,preferred)}}
 function formatScore(strokes=g.strokes){const score=strokes-cfg().par;return score===0?'EVEN PAR':`${score>0?'+':''}${score}`}
+
+let quickSelection=1,quickKey="";
+function selectNearest(target,excludedWoods=false){
+ const opts=clubs.filter(c=>c.kind!=="putter"&&(target>105||c.kind!=="wood"||c.id==="hybrid")&&(!excludedWoods||c.kind!=="wood"));
+ return opts.reduce((a,b)=>Math.abs(b.carry-target)<Math.abs(a.carry-target)?b:a,opts[0]);
+}
+function presetPower(yards,id,mode){
+ const c=clubs.find(c=>c.id===id)||clubs[1],f=flightModes.find(f=>f.id===mode)||flightModes[0];
+ const lieFactor=g.lie==="Rough"?.89:g.lie==="Bunker"?.72:g.lie==="Greenside rough"?.86:g.lie==="Long rough"?.77:1;
+ let base=c.carry*f.mult*lieFactor;
+ if(mode==="chip")base=base*1.65;
+ return cap(Math.round((yards/Math.max(1,base))*20)*5,15,110);
+}
+function quickPresets(){
+ const d=toPin(),putt=g.phase==="green",short=!putt&&d<=55,tee=g.phase==="tee",par3=tee&&cfg().par===3;
+ let list=[];
+ function option(title,risk,reward,clubId,mode,aim,power,why,shape="straight"){
+   return{title,risk,reward,clubId,mode,aim,power:cap(Math.round(power/5)*5,15,110),shape,why};
+ }
+ if(putt){
+   list=[
+    option("SAFE",1,2,"putter","normal","lag",100,"Lag it close · avoid a big second putt"),
+    option("BALANCED",2,3,"putter","normal","standard",100,"Normal pace · sensible chance to hole"),
+    option("ATTACK",4,5,"putter","normal","firm",100,"Firm pace · better make chance, longer miss")
+   ];
+ }else if(short){
+   if(g.lie==="Bunker"){
+     list=[
+      option("SAFE",2,1,"sw","splash","centre",presetPower(d*.78,"sw","splash"),"Escape the sand · allow a longer putt"),
+      option("BALANCED",3,3,"sw","splash","centre",presetPower(d,"sw","splash"),"Splash towards the flag"),
+      option("ATTACK",5,5,"sw","splash","right",presetPower(d*1.1,"sw","splash"),"Attack the pin · overshoot risk")
+     ];
+   }else{
+     const flopClub=d>29?"sw":"lw";
+     list=[
+       option("SAFE",1,2,"gw","chip","centre",presetPower(d,"gw","chip"),"Bump-and-run · reliable contact"),
+       option("BALANCED",3,3,"sw","normal","centre",presetPower(d,"sw","normal"),"Pitch and check near the hole"),
+       option("ATTACK",5,5,flopClub,"flop","centre",presetPower(d,flopClub,"flop"),"High flop · close chance, difficult strike")
+     ];
+   }
+ }else if(tee&&!par3){
+   list=[
+    option("SAFE",1,2,"3wood","normal","left",100,"Fairway finder · longer approach"),
+    option("BALANCED",3,3,"driver","normal","centre",100,"Good distance with a centre target"),
+    option("ATTACK",5,5,"driver","normal","right",110,"Chase extra distance · hazard risk","draw")
+   ];
+ }else if(par3){
+   const ideal=selectNearest(d),conservative=selectNearest(d*.9);
+   list=[
+    option("SAFE",1,2,conservative.id,"normal","left",presetPower(d*.93,conservative.id,"normal"),"Aim left side of green, away from trouble"),
+    option("BALANCED",3,3,ideal.id,"normal","centre",presetPower(d,ideal.id,"normal"),"Aim for middle of green"),
+    option("ATTACK",5,5,ideal.id,"high","right",presetPower(d*1.03,ideal.id,"high"),"Attack the pin with a high approach")
+   ];
+ }else{
+   const optimal=selectNearest(d),safeTarget=d>200?Math.min(175,d-85):d*.88;
+   const safer=selectNearest(safeTarget),attacker=selectNearest(d*1.03);
+   list=[
+    option("SAFE",1,2,safer.id,"normal","left",presetPower(safeTarget,safer.id,"normal"),d>200?"Lay up · leave a comfortable short shot":"Leave the ball short-left of the flag"),
+    option("BALANCED",3,3,optimal.id,"normal","centre",presetPower(d,optimal.id,"normal"),"Target the centre of the green"),
+    option("ATTACK",5,5,attacker.id,"high","right",presetPower(d*1.03,attacker.id,"high"),"Chase a close putt · greater hazard risk")
+   ];
+ }
+ const skill=window.golfPlayerStats||{driving:60,irons:64,short:51,putting:54,mental:45};
+ const rating=putt?skill.putting:short?skill.short:tee&&!par3?skill.driving:skill.irons;
+ return list.map((q,i)=>({...q,risk:cap(q.risk+(rating<53?1:rating>75?-1:0)+(cfg().wind>=13&&i===2?1:0),1,5),reward:cap(q.reward+(rating>=75&&i===2?1:0),1,5),rating,kind:putt?"Putting":short?"Short Game":tee&&!par3?"Driving":"Iron Play"}));
+}
+function applyQuick(p){g.club=p.clubId;g.flight=p.mode;g.aim=p.aim;g.shape=p.shape;g.power=p.power;}
+function quickPreview(p){
+ const before={club:g.club,flight:g.flight,aim:g.aim,shape:g.shape,power:g.power};
+ applyQuick(p);
+ const estimate=g.phase==="green"?null:projection(true);
+ const clubName=(clubs.find(c=>c.id===p.clubId)||clubs[1]).label;
+ Object.assign(g,before);
+ return{clubName,estimate};
+}
+function renderQuick(){
+ const panel=el("quickPanel");
+ if(!panel||g.phase==="complete"){if(panel)panel.classList.add("hidden");return}
+ panel.classList.remove("hidden");
+ const key=(cfg().number||1)+"|"+g.strokes+"|"+g.phase+"|"+g.ball.x.toFixed(2)+"|"+g.ball.y.toFixed(2);
+ if(key!==quickKey){quickKey=key;quickSelection=g.quickShotKey===key&&Number.isInteger(g.quickSelection)?g.quickSelection:1;}
+ const options=quickPresets();quickSelection=cap(quickSelection,0,2);
+ const active=options[quickSelection];applyQuick(active);
+ g.quickSelection=quickSelection;g.quickShotKey=key;
+ const d=toPin();
+ el("quickAdvice").textContent=active.kind+" "+active.rating+" · "+(g.phase==="green"?Math.round(d*3)+" ft to cup":Math.round(d)+" yd to pin");
+ const container=el("quickChoices");container.innerHTML="";
+ options.forEach((q,i)=>{
+   const preview=quickPreview(q),clubName=preview.clubName,estimate=preview.estimate;
+   const b=document.createElement("button");b.type="button";
+   b.className="quick-choice"+(i===quickSelection?" chosen":"");b.setAttribute("aria-pressed",i===quickSelection?"true":"false");
+   const primary=g.phase==="green"?q.why:clubName+" · "+q.why;
+   const prospect=g.phase==="green"?"Est. make "+Math.round(makeChance(d*3,q.aim)*100)+"%":estimate?"~"+Math.round(estimate.carry)+" yd carry · ~"+Math.round(estimate.after)+" yd left":"";
+   b.innerHTML='<span class="qc-top"><strong>'+q.title+'</strong><span class="qc-figures">RISK '+q.risk+'/5 &nbsp; · &nbsp; REWARD '+q.reward+'/5</span></span><span class="qc-name">'+primary+'</span><span class="qc-forecast">'+prospect+'</span>';
+   b.addEventListener("click",()=>{quickSelection=i;g.quickSelection=i;render();});
+   container.appendChild(b);
+ });
+}
+
 function render(){const done=g.phase==='complete',on=g.phase==='green';
 el('strokeNum').textContent=g.strokes;
 el('pinNum').textContent=done?'HOLED':on?Math.round(toPin()*3)+' ft':Math.round(toPin())+' yd';
@@ -161,7 +265,7 @@ if(!done){
  else{el('flightChoices').parentElement.classList.remove('hidden');el('shapeGroup').classList.remove('hidden');el('powerName').textContent='5. Swing power';el('powerHelp').textContent='Affects carry and dispersion';el('power').min=toPin()<70?'15':'65';el('power').max='110';}
  const available=flightOptions();if(!on&&!available.includes(g.flight))g.flight=available[0];
  makeClubs();if(!on){buttonGroup('flightChoices',flightModes.filter(f=>available.includes(f.id)).map(f=>({id:f.id,label:f.label})),g.flight,v=>{g.flight=v});buttonGroup('shapeChoices',[{id:'straight',label:'Straight'},{id:'draw',label:'Draw ↶'},{id:'fade',label:'Fade ↷'}],g.shape,v=>{g.shape=v});}
- if(on){if(!['lag','standard'].includes(g.aim))g.aim='standard';buttonGroup('aimChoices',[{id:'lag',label:'Lag · safe'},{id:'standard',label:'Normal · attack'}],g.aim,v=>g.aim=v);}
+ if(on){if(!['lag','standard','firm'].includes(g.aim))g.aim='standard';buttonGroup('aimChoices',[{id:'lag',label:'Lag · safe'},{id:'standard',label:'Normal'},{id:'firm',label:'Firm · attack'}],g.aim,v=>g.aim=v);}
  else buttonGroup('aimChoices',[{id:'left',label:'← Left'},{id:'centre',label:'Centre'},{id:'right',label:'Right →'}],g.aim,v=>g.aim=v);
  el('power').value=g.power;el('powerOut').textContent=g.power+'%';
  if(on){const feet=Math.round(toPin()*3),p=makeChance(feet,g.aim);el('previewCarry').textContent=feet+' ft';el('previewEnd').textContent=Math.round(100*p)+'%';el('previewWind').textContent='Minimal';el('tip').textContent='Putt with '+g.aim+' pace. Lagging limits three-putt risk; normal pace gives more chances to hole the putt.';el('hit').textContent='PUTT FOR THE HOLE →';}
@@ -171,8 +275,8 @@ if(!done){
  el('logCount').textContent=`· ${g.history.length} played`;el('log').innerHTML=g.history.length?'':'';
  if(!g.history.length)el('log').innerHTML='<p class="hint">Your shot-by-shot results will appear here.</p>';
  else for(let i=g.history.length-1;i>=0;i--){let h=g.history[i];const wrap=document.createElement('div');wrap.className='log-entry';const headline=document.createElement('strong');headline.textContent=`SHOT ${i+1} · ${h.club}`;const p=document.createElement('p');p.textContent=h.message;wrap.appendChild(headline);wrap.appendChild(p);el('log').appendChild(wrap)}
- draw();save();window.dispatchEvent(new CustomEvent('golfpro:render',{detail:{state:g}}));}
-function makeChance(feet,style){let base=feet<=3?.96:feet<=5?.81:feet<=8?.52:feet<=12?.30:feet<=20?.16:feet<=30?.075:feet<=50?.03:.012;const powerFactor=1-Math.abs(g.power-100)*.017;return cap(base*(style==='lag'?.78:style==='firm'?1.09:1)*powerFactor,.008,.97)}
+ renderQuick();draw();save();window.dispatchEvent(new CustomEvent('golfpro:render',{detail:{state:g}}));}
+function makeChance(feet,style){let base=feet<=3?.96:feet<=5?.81:feet<=8?.52:feet<=12?.30:feet<=20?.16:feet<=30?.075:feet<=50?.03:.012;const powerFactor=1-Math.abs(g.power-100)*.017;const player=window.golfPlayerStats||{putting:54};return cap(base*(style==='lag'?.78:style==='firm'?1.09:1)*powerFactor*cap(1+(player.putting-50)*.014,.75,1.5),.008,.97)}
 function makePutt(){let feet=toPin()*3,mode=['lag','standard','firm'].includes(g.aim)?g.aim:'standard';let made=Math.random()<makeChance(feet,mode);let end;if(made){end={x:0,y:420}}else{let pacePenalty=Math.abs(g.power-100)/10*(mode==='firm'?5.5:3.5);let leave=cap((mode==='lag'?.105:mode==='firm'?.25:.16)*feet+pacePenalty+Math.abs(normal())*2.2,1.4,mode==='firm'?24:16);let angle=rnd(0,Math.PI*2);end={x:(leave/3)/scale()*Math.cos(angle),y:420+(leave/3)/scale()*Math.sin(angle)};if(!onGreen(end))end={x:end.x*.7,y:420+(end.y-420)*.7};}return{start:{...g.ball},end,carry:0,roll:feet/3,club:'Putter',message:made?`${Math.round(feet)}-foot ${mode} putt drops into the cup.`:`${Math.round(feet)}-foot ${mode} putt misses; ${Math.round(Math.hypot(end.x,420-end.y)*3)} feet left.`,lie:made?'Holed':'Green',penalty:0,done:made,putt:true};}
 function makeGolfShot(){let selected=club(),f=flight(),result=projection(false),end=result.dest,lie=lieAt(end.x,end.y),penalty=0;let report;
 if(lie==='Water hazard'){
@@ -199,6 +303,6 @@ window.GolfEngine={state:()=>JSON.parse(JSON.stringify(g)),newHole:()=>{g=create
 window.addEventListener('resize',setupCanvas);render();requestAnimationFrame(setupCanvas);
 })();
 </script>
-<script src="career.js?v=2"></script>
+<script src="career.js?v=3"></script>
 </body>
 </html>
