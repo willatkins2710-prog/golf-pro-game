@@ -144,3 +144,11 @@
 .qc-odds b{font-size:21px}
 .qc-definition{font-size:10px}
 }
+
+/* Three comparable outcome probabilities: green, close to pin, costly miss */
+#gameApp .qc-odds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+#gameApp .qc-odds>span{min-width:0;padding:7px 5px;align-items:center;text-align:center;letter-spacing:0;line-height:1.1;font-size:9px;justify-content:space-between;gap:4px}
+#gameApp .qc-odds b{font-size:20px;white-space:nowrap;line-height:1.1}
+#gameApp .qc-close{color:#d1e6fa;background:#23475a70}
+#gameApp .qc-definition{font-size:10px;color:#b1bfb2}
+@media(max-width:390px){#gameApp .qc-odds b{font-size:18px}#gameApp .qc-odds>span{font-size:8px;padding:6px 3px}}
