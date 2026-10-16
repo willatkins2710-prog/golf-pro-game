@@ -119,7 +119,7 @@ if(g.quickShotKey && Number.isInteger(g.quickSelection) && (g.phase==='approach'
   targetX=centery(t.y)+t.x+wind*.15;
 }
 // Caddie options compensate for the forecast crosswind. Wind still worsens dispersion.
-if(Number.isInteger(g.quickSelection)&&g.quickShotKey)targetX-=wind*.85;
+if(Number.isInteger(g.quickSelection)&&g.quickShotKey && !((g.phase==='approach'||g.phase==='tee'&&cfg().par===3)&&toPin()>55&&toPin()<=220))targetX-=wind*.85;
 if(preview)return{carry,roll,wind,dest:{x:targetX,y:endY},after:Math.round(Math.hypot(420-endY,targetX)*scale())};
 const variability=shotVariability(selected);
 let deviation=variability.lateral;
