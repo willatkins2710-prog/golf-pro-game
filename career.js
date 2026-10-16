@@ -125,7 +125,7 @@ root.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{t
 root.querySelectorAll("[data-action]").forEach(b=>b.addEventListener("click",()=>act(b.dataset.action)));
 }
 function showHome(page="home"){tab=page;byId("careerShell").classList.remove("hidden");byId("gameApp").classList.add("hidden");byId("stickyShot").classList.remove("visible");renderCareer();window.scrollTo(0,0)}
-function showRound(){syncGolfer();if(!career.session)return showHome();byId("careerShell").classList.add("hidden");byId("gameApp").classList.remove("hidden");byId("stickyShot").classList.add("visible");const s=career.session;const snapshot=s.engineState?JSON.parse(JSON.stringify(s.engineState)):null;updateCourse(s.current);if(snapshot&&s.scores[s.current]===null)engine.restore(snapshot);else if(s.scores[s.current]===null&&engine.state().phase==="complete")engine.newHole();engine.resize();renderGameBar();window.scrollTo(0,0)}
+function showRound(){syncGolfer();if(!career.session)return showHome();course=makeCourse(career.session.eventIndex??career.eventIndex);byId("careerShell").classList.add("hidden");byId("gameApp").classList.remove("hidden");byId("stickyShot").classList.add("visible");const s=career.session;const snapshot=s.engineState?JSON.parse(JSON.stringify(s.engineState)):null;updateCourse(s.current);if(snapshot&&s.scores[s.current]===null)engine.restore(snapshot);else if(s.scores[s.current]===null&&engine.state().phase==="complete")engine.newHole();engine.resize();renderGameBar();window.scrollTo(0,0)}
 function updateCourse(index){const h=course[index];window.golfConfig={...h};engine.configure(window.golfConfig);
 byId("roundHoleInfo").textContent="Hole "+h.number+" / 18 · "+h.name+" · Par "+h.par+" · "+h.yards+" yd";
 byId("actionTitle").textContent="Plan your next shot";
@@ -155,23 +155,39 @@ s.engineState=null;save();closeDialog();nextHole()}
 function tournamentPrize(position,purse=20000){const base=position===1?4000:position===2?2550:position===3?1800:position<=5?1250:position<=10?800:position<=15?525:position<=20?330:position<=30?180:position<=45?95:0;return Math.round(base*purse/20000)}
 function awardXP(n){career.xp+=n;while(career.xp>=1000){career.xp-=1000;career.level++;career.skillPoints+=2}}
 function normalRandom(){return Math.sqrt(-2*Math.log(1-Math.random()))*Math.cos(2*Math.PI*Math.random())}
-function concludeRound(){let s=getCurrent();if(!s)return;let total=scoreTotal(s.scores);if(total.holes!==18)return;
-let played=s.scores.filter(q=>q.type==="played").length,simulated=18-played;
-career.lastRound={mode:s.mode,roundNumber:s.roundNumber,score:total.strokes,relative:total.relative,played,simulated,scores:s.scores.slice()};
-career.history.unshift({...career.lastRound,day:new Date().toISOString().slice(0,10)});
-career.session=null;
-let text="18-hole "+(s.mode==="practice"?"practice":"tournament")+" round complete. Score "+total.strokes+" ("+scoreText(total.relative)+"). "+played+" holes played and "+simulated+" simulated.";
-if(s.mode==="tournament"){career.tournament.rounds.push(s.scores.slice());let done=career.tournament.rounds.length;
-if(done===2){let aggregate=career.tournament.rounds.reduce((a,round)=>a+scoreTotal(round).relative,0);if(aggregate>6){career.tournament.status="cut";awardXP(120);text+=" You missed the +6 cut, earning 120 XP. No prize money."}else{text+=" You've made the cut! Round 3 is available."}}
-if(done===4){let sum=career.tournament.rounds.reduce((a,round)=>a+scoreTotal(round).relative,0);
-let field=Array.from({length:63},()=>Math.round(normalRandom()*9-1));let position=1+field.filter(v=>v<sum).length;
-const prize=tournamentPrize(position);career.tournament.position=position;career.tournament.prize=prize;career.tournament.status="completed";
-career.bank+=prize;career.earnings+=prize;
-let experience=180+Math.max(0,50-position)*6;awardXP(experience);
-if(position===1&&career.sponsor.status==="active"){career.bank+=200;text+=" Mizuno win bonus: £200."}
-text+=" Final tournament position P"+position+"; prize "+money(prize)+"; XP +"+experience+".";
-}else if(done<4&&career.tournament.status!=="cut"){career.tournament.status="playing"}}
-save();showHome("home");openDialog('<h2>Round Complete</h2><p>'+text+'</p>'+btn("View Scorecard","lastscore","secondary")+btn("Return to Career","closeDialog")+'</div>')}
+function concludeRound(){
+ const session=getCurrent();if(!session)return;
+ const total=scoreTotal(session.scores);if(total.holes!==18)return;
+ const played=session.scores.filter(q=>q.type==="played").length,simulated=18-played;
+ const e=events[session.eventIndex??career.eventIndex]||activeEvent();
+ career.lastRound={mode:session.mode,roundNumber:1,eventIndex:session.eventIndex,eventName:e.name,score:total.strokes,relative:total.relative,played,simulated,scores:session.scores.slice()};
+ career.history.unshift({...career.lastRound,day:new Date().toISOString().slice(0,10)});
+ career.session=null;
+ let message="18-hole "+(session.mode==="practice"?"practice":"tournament")+" round complete. Score "+total.strokes+" ("+scoreText(total.relative)+"). "+played+" holes played and "+simulated+" simulated.";
+ if(session.mode==="tournament"){
+   const rivals=Array.from({length:63},()=>Math.round(normalRandom()*4.0+1));
+   const position=1+rivals.filter(v=>v<total.relative).length;
+   const prize=tournamentPrize(position,e.purse);
+   career.tournament.position=position;career.tournament.prize=prize;
+   career.tournament.status="completed";career.tournament.rounds=[session.scores.slice()];
+   career.bank+=prize;career.earnings+=prize;
+   const xp=180+Math.max(0,50-position)*6;awardXP(xp);
+   let bonus=0;if(position===1&&career.sponsor.status==="active"){bonus=200;career.bank+=bonus}
+   career.eventResults.push({eventIndex:session.eventIndex??career.eventIndex,name:e.name,score:total.strokes,relative:total.relative,position,prize,bonus,xp});
+   message+=" Final position P"+position+"; prize "+money(prize)+"; XP +"+xp+".";
+   if(bonus)message+=" Mizuno win bonus "+money(bonus)+".";
+   if(career.eventIndex<events.length-1)message+=" Next up: "+events[career.eventIndex+1].name+".";
+ }
+ save();showHome("home");openDialog('<h2>Round Complete</h2><p>'+message+'</p>'+btn("View Scorecard","lastscore","secondary")+btn("Return to Career","closeDialog")+"</div>");
+}
+function finaliseLegacyTournament(){
+ const t=career.tournament;if(t.status!=="playing"||career.session||!t.rounds.length)return;
+ const scores=t.rounds[t.rounds.length-1],total=scoreTotal(scores);
+ if(total.holes!==18)return;
+ career.session={mode:"tournament",roundNumber:1,eventIndex:career.eventIndex,eventName:activeEvent().name,current:17,scores:scores.slice(),engineState:null};
+ concludeRound();
+}
+
 function openDialog(html){const w=byId("dialogRoot");w.classList.remove("hidden");w.innerHTML='<div class="c-dialog" role="dialog" aria-modal="true">'+html+'</div>';w.querySelectorAll("[data-action]").forEach(b=>b.addEventListener("click",()=>act(b.dataset.action)))}
 function closeDialog(){byId("dialogRoot").classList.add("hidden");byId("dialogRoot").innerHTML=""}
 function skipDialog(){let s=getCurrent();if(!s)return;const left=s.scores.filter(q=>!q).length;let html='<h2>Skip or simulate holes</h2><p>Skipped holes receive realistically simulated scores. Already played holes are never overwritten.</p>';
@@ -180,9 +196,14 @@ html+=btn("View 18-hole scorecard","scorecard","secondary")+btn("Cancel","closeD
 openDialog(html)}
 function act(a){
 if(a==="practice"){if(!career.session)newSession("practice",1);else showRound();return}
-if(a==="tournament"){if(career.session)return showRound();let t=career.tournament;if(t.status==="completed"||t.status==="cut")return;
-if(!t.entryPaid){if(career.bank<175){openDialog("<h2>Insufficient Funds</h2><p>You need £175 to enter the Northern Masters.</p>"+btn("Close","closeDialog")+"</div>");return}career.bank-=175;t.entryPaid=true;t.status="playing";save()}
-newSession("tournament",t.rounds.length+1);return}
+if(a==="tournament"){if(career.session)return showRound();const t=career.tournament,e=activeEvent();if(t.status==="completed"||t.status==="cut")return;
+if(!t.entryPaid){if(career.bank<e.fee){openDialog("<h2>Insufficient Funds</h2><p>You need "+money(e.fee)+" to enter "+e.name+".</p>"+btn("Close","closeDialog")+"</div>");return}career.bank-=e.fee;t.entryPaid=true;t.status="playing";save()}
+newSession("tournament",1);return}
+if(a==="nextEvent"){if(career.session||career.tournament.status!=="completed"||career.eventIndex>=events.length-1)return;
+career.eventIndex++;career.tournament={status:"not_started",entryPaid:false,rounds:[],position:null,prize:0};
+course=makeCourse(career.eventIndex);save();showHome("home");return}
+if(a==="schedule"){showHome("schedule");return}
+if(a==="legacyFinish"){finaliseLegacyTournament();return}
 if(a==="resume"){showRound();return}
 if(a==="back"){showHome();return}
 if(a==="scorecard"){let s=getCurrent();if(!s)return;openDialog(scorecardHtml(s.scores,"18-Hole Scorecard")+btn("Close","closeDialog"));return}
